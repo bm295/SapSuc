@@ -63,11 +63,6 @@ public static class Pointer
     public static (int sum, int absDiff) Update(int a, int b) => (a + b, Math.Abs(a - b));
 }
 
-public static class Arrays
-{
-    public static int[] Reverse(int[] values) => values.AsEnumerable().Reverse().ToArray();
-}
-
 public static class Strings
 {
     public static (int aLength, int bLength, string concat, string swapped) Solve(string a, string b)
