@@ -2,11 +2,6 @@ using System.Globalization;
 
 namespace HackerrankCSharp.Exercises;
 
-public static class HelloWorld
-{
-    public static string Solve() => "Hello, World!";
-}
-
 public static class InputOutput
 {
     public static int SumOfThree(int a, int b, int c) => a + b + c;
