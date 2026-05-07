@@ -10,7 +10,7 @@ This repository has been rewritten into a small, modular HR system inspired by S
 ## Run
 
 ```bash
-dotnet run --project HackerrankCSharp.csproj
+dotnet run --project src\SapSuc.Web\SapSuc.Web.csproj
 ```
 
 ## Notes
