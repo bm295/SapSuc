@@ -14,6 +14,15 @@ var employee = platform.HireEmployee(
 
 platform.SetCompensation(employee.Id, 120000m, "USD", DateTime.UtcNow.Date);
 
+var proxy = platform.HireEmployee(
+    employeeNumber: "E-2001",
+    firstName: "Noah",
+    lastName: "Davis",
+    department: "Engineering",
+    title: "Engineering Manager",
+    hireDate: new DateTime(2020, 8, 5),
+    yearlyLeaveEntitlement: 25);
+
 var goal = platform.AddGoal(
     employee.Id,
     "Launch onboarding portal",
@@ -28,13 +37,15 @@ var leave = platform.RequestLeave(
     DateTime.UtcNow.Date.AddDays(14),
     DateTime.UtcNow.Date.AddDays(16),
     "Family event");
-platform.ApproveLeave(leave.Id);
+platform.AssignProxy(employee.Id, proxy.Id, DateTime.UtcNow.Date.AddDays(-1), DateTime.UtcNow.Date.AddDays(30));
+platform.ApproveLeaveAs(proxy.Id, leave.Id);
 
 Console.WriteLine("=== SuccessFactors-Style HR Snapshot ===");
 Console.WriteLine($"Employee: {employee.EmployeeNumber} - {employee.FullName}");
 Console.WriteLine($"Org: {employee.Department} / {employee.JobTitle}");
 Console.WriteLine($"Goal: {goal.Title} [{goal.Status}] due {goal.DueDate:yyyy-MM-dd}");
 Console.WriteLine($"Leave request: {leave.Status}, days={leave.Days}, remaining={platform.GetLeaveBalance(employee.Id)}");
+Console.WriteLine($"Proxy approver: {proxy.FullName}");
 Console.WriteLine("Compensation records:");
 foreach (var comp in platform.Compensations.Where(c => c.EmployeeId == employee.Id))
 {
