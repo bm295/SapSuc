@@ -10,6 +10,7 @@ public sealed class HrPlatformService
     private readonly List<LeaveRequest> _leaveRequests = [];
     private readonly List<CompensationRecord> _compensations = [];
     private readonly Dictionary<Guid, int> _leaveBalances = [];
+    private readonly List<ProxyAssignment> _proxyAssignments = [];
 
     public Employee HireEmployee(string employeeNumber, string firstName, string lastName, string department, string title, DateTime hireDate, int yearlyLeaveEntitlement)
     {
@@ -46,6 +47,30 @@ public sealed class HrPlatformService
         if (request is null || request.Status != LeaveStatus.Pending)
             return false;
 
+        return ApproveLeaveInternal(request);
+    }
+
+    public bool ApproveLeaveAs(Guid actingEmployeeId, Guid leaveRequestId, DateTime? actionDate = null)
+    {
+        var request = _leaveRequests.FirstOrDefault(x => x.Id == leaveRequestId);
+        if (request is null || request.Status != LeaveStatus.Pending)
+            return false;
+
+        var currentDate = (actionDate ?? DateTime.UtcNow).Date;
+        var canApproveAsProxy = _proxyAssignments.Any(x =>
+            x.ProxyEmployeeId == actingEmployeeId &&
+            x.DelegatorEmployeeId == request.EmployeeId &&
+            x.CanApproveLeave &&
+            x.IsActiveOn(currentDate));
+
+        if (!canApproveAsProxy)
+            return false;
+
+        return ApproveLeaveInternal(request);
+    }
+
+    private bool ApproveLeaveInternal(LeaveRequest request)
+    {
         var remaining = _leaveBalances.GetValueOrDefault(request.EmployeeId, 0);
         if (remaining < request.Days)
         {
@@ -56,6 +81,17 @@ public sealed class HrPlatformService
         _leaveBalances[request.EmployeeId] = remaining - request.Days;
         request.Approve();
         return true;
+    }
+
+
+    public ProxyAssignment AssignProxy(Guid delegatorEmployeeId, Guid proxyEmployeeId, DateTime startDate, DateTime endDate, bool canApproveLeave = true)
+    {
+        EnsureEmployeeExists(delegatorEmployeeId);
+        EnsureEmployeeExists(proxyEmployeeId);
+
+        var assignment = new ProxyAssignment(delegatorEmployeeId, proxyEmployeeId, startDate, endDate, canApproveLeave);
+        _proxyAssignments.Add(assignment);
+        return assignment;
     }
 
     public CompensationRecord SetCompensation(Guid employeeId, decimal baseSalary, string currency, DateTime effectiveDate)
@@ -70,6 +106,13 @@ public sealed class HrPlatformService
     public IEnumerable<PerformanceReview> Reviews => _reviews;
     public IEnumerable<LeaveRequest> LeaveRequests => _leaveRequests;
     public IEnumerable<CompensationRecord> Compensations => _compensations;
+    public IEnumerable<ProxyAssignment> ProxyAssignments => _proxyAssignments;
 
     public int GetLeaveBalance(Guid employeeId) => _leaveBalances.GetValueOrDefault(employeeId, 0);
+
+    private void EnsureEmployeeExists(Guid employeeId)
+    {
+        if (_employees.All(x => x.Id != employeeId))
+            throw new InvalidOperationException($"Employee {employeeId} does not exist.");
+    }
 }
