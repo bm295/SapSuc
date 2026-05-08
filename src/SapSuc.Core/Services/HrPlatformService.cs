@@ -12,9 +12,16 @@ public sealed class HrPlatformService
     private readonly Dictionary<Guid, int> _leaveBalances = [];
     private readonly List<ProxyAssignment> _proxyAssignments = [];
 
-    public Employee HireEmployee(string employeeNumber, string firstName, string lastName, string department, string title, DateTime hireDate, int yearlyLeaveEntitlement)
+    public bool AllowEmployeeProxySelfService { get; private set; }
+
+    public void UpdateProxySelfService(bool allowEmployeeProxySelfService)
     {
-        var employee = new Employee(employeeNumber, firstName, lastName, department, title, hireDate);
+        AllowEmployeeProxySelfService = allowEmployeeProxySelfService;
+    }
+
+    public Employee HireEmployee(string employeeNumber, string firstName, string lastName, string department, string title, DateTime hireDate, int yearlyLeaveEntitlement, string? assignmentId = null)
+    {
+        var employee = new Employee(employeeNumber, firstName, lastName, department, title, hireDate, assignmentId);
         _employees.Add(employee);
         _leaveBalances[employee.Id] = yearlyLeaveEntitlement;
         return employee;
@@ -84,14 +91,70 @@ public sealed class HrPlatformService
     }
 
 
-    public ProxyAssignment AssignProxy(Guid delegatorEmployeeId, Guid proxyEmployeeId, DateTime startDate, DateTime endDate, bool canApproveLeave = true)
+    public ProxyAssignment AssignProxy(
+        Guid delegatorEmployeeId,
+        Guid proxyEmployeeId,
+        DateTime startDate,
+        DateTime endDate,
+        bool canApproveLeave = true,
+        bool hasAllToolAccess = false,
+        IEnumerable<string>? toolPermissions = null)
+    {
+        return AssignProxies(delegatorEmployeeId, [proxyEmployeeId], startDate, endDate, canApproveLeave, hasAllToolAccess, toolPermissions).Single();
+    }
+
+    public IReadOnlyList<ProxyAssignment> AssignProxies(
+        Guid delegatorEmployeeId,
+        IEnumerable<Guid> proxyEmployeeIds,
+        DateTime startDate,
+        DateTime endDate,
+        bool canApproveLeave = true,
+        bool hasAllToolAccess = false,
+        IEnumerable<string>? toolPermissions = null)
+    {
+        ArgumentNullException.ThrowIfNull(proxyEmployeeIds);
+        EnsureEmployeeExists(delegatorEmployeeId);
+
+        var distinctProxyEmployeeIds = proxyEmployeeIds.Distinct().ToList();
+        if (distinctProxyEmployeeIds.Count == 0)
+            throw new ArgumentException("At least one proxy employee is required.", nameof(proxyEmployeeIds));
+
+        foreach (var proxyEmployeeId in distinctProxyEmployeeIds)
+        {
+            EnsureEmployeeExists(proxyEmployeeId);
+        }
+
+        var assignments = distinctProxyEmployeeIds
+            .Select(proxyEmployeeId => new ProxyAssignment(
+                delegatorEmployeeId,
+                proxyEmployeeId,
+                startDate,
+                endDate,
+                canApproveLeave,
+                hasAllToolAccess,
+                toolPermissions))
+            .ToList();
+
+        _proxyAssignments.AddRange(assignments);
+        return assignments;
+    }
+
+    public int RemoveProxyAssignments(Guid delegatorEmployeeId, Guid proxyEmployeeId, DateTime? startDate = null, DateTime? endDate = null)
     {
         EnsureEmployeeExists(delegatorEmployeeId);
         EnsureEmployeeExists(proxyEmployeeId);
 
-        var assignment = new ProxyAssignment(delegatorEmployeeId, proxyEmployeeId, startDate, endDate, canApproveLeave);
-        _proxyAssignments.Add(assignment);
-        return assignment;
+        return _proxyAssignments.RemoveAll(assignment =>
+            assignment.DelegatorEmployeeId == delegatorEmployeeId &&
+            assignment.ProxyEmployeeId == proxyEmployeeId &&
+            (startDate is null || assignment.StartDate == startDate.Value) &&
+            (endDate is null || assignment.EndDate == endDate.Value));
+    }
+
+    public bool RemoveProxyAssignment(Guid proxyAssignmentId)
+    {
+        var assignment = _proxyAssignments.FirstOrDefault(candidate => candidate.Id == proxyAssignmentId);
+        return assignment is not null && _proxyAssignments.Remove(assignment);
     }
 
     public CompensationRecord SetCompensation(Guid employeeId, decimal baseSalary, string currency, DateTime effectiveDate)

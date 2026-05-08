@@ -1,8 +1,27 @@
-﻿@page
+@page
 @model PrivacyModel
 @{
-    ViewData["Title"] = "Privacy Policy";
+    ViewData["Title"] = "Data Privacy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="standard-page">
+    <section class="standard-page-header">
+        <p class="eyebrow">Governance</p>
+        <h1>Data Privacy</h1>
+        <p>Proxy administration records use employee identifiers, assignment windows, and approval permissions.</p>
+    </section>
+
+    <section class="standard-card">
+        <h2>Proxy data handling</h2>
+        <p>Proxy assignments are held in application memory for this sample environment. The data model avoids storing credentials or session secrets in proxy records.</p>
+
+        <dl>
+            <dt>Scope</dt>
+            <dd>Employee number, employee name, department, proxy window, and leave approval permission.</dd>
+            <dt>Retention</dt>
+            <dd>Records reset when the application restarts because this sample does not use persistent storage.</dd>
+            <dt>Audit readiness</dt>
+            <dd>CSV import reports assignment and removal counts, with row-level errors surfaced to administrators.</dd>
+        </dl>
+    </section>
+</div>
