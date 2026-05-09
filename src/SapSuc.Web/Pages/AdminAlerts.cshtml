@@ -1,0 +1,106 @@
+@page "/AdminAlerts"
+@{
+    ViewData["Title"] = "Admin Alerts";
+
+    var alerts = new[]
+    {
+        new { FirstName = "Rudolf", LastName = "Meier", Date = "Jun 3, 2023", Code = "CC_WeeklyOvertime>10", GroupName = "CC_WeeklyOvertime>10", Value = "60", Message = "Not more than 10 hours overtime per week", PeriodStart = "", PeriodEnd = "" },
+        new { FirstName = "Rudolf", LastName = "Meier", Date = "Jun 1, 2023", Code = "MONTHLY_ALERT", GroupName = "Monthly Alert Max OT", Value = "330", Message = "You should not record more than 6 hrs overtime per month!", PeriodStart = "Jun 1, 2023", PeriodEnd = "Jun 30, 2023" },
+        new { FirstName = "Rudolf", LastName = "Meier", Date = "May 30, 2023", Code = "MONTHLY_ALERT", GroupName = "Monthly Alert Max OT", Value = "330", Message = "You should not record more than 6 hrs overtime per month!", PeriodStart = "May 1, 2023", PeriodEnd = "May 31, 2023" },
+        new { FirstName = "Rudolf", LastName = "Meier", Date = "Apr 12, 2023", Code = "MONTHLY_ALERT", GroupName = "Monthly Alert Max OT", Value = "105", Message = "You should not record more than 6 hrs overtime per month!", PeriodStart = "Apr 1, 2023", PeriodEnd = "Apr 30, 2023" },
+        new { FirstName = "Rudolf", LastName = "Meier", Date = "Mar 19, 2023", Code = "MONTHLY_ALERT", GroupName = "Monthly Alert Max OT", Value = "510", Message = "You should not record more than 6 hrs overtime per month!", PeriodStart = "Mar 1, 2023", PeriodEnd = "Mar 31, 2023" },
+        new { FirstName = "Rudolf", LastName = "Meier", Date = "Jan 11, 2023", Code = "MONTHLY_ALERT", GroupName = "Monthly Alert Max OT", Value = "420", Message = "You should not record more than 6 hrs overtime per month!", PeriodStart = "Jan 1, 2023", PeriodEnd = "Jan 31, 2023" }
+    };
+}
+
+<div class="aa-page">
+    <header class="aa-header">
+        <div>
+            <nav class="aa-breadcrumb" aria-label="Breadcrumb">
+                <a href="/AdminCenter">Admin Center</a> <span>/</span>
+            </nav>
+            <h1>Admin Alerts</h1>
+        </div>
+
+        <nav class="aa-header-links" aria-label="Admin alert actions">
+            <a href="#">Subscribe to Emails</a>
+            <a href="#">Information</a>
+            <a href="#">Configure Alert Type</a>
+        </nav>
+    </header>
+
+    <section class="aa-filter-panel" aria-label="Admin alert filters">
+        <div class="aa-filter-row">
+            <label for="alert-type">Admin Alert Type</label>
+            <select id="alert-type" class="aa-select">
+                <option>Time Valuation (797)</option>
+            </select>
+            <label class="aa-checkbox">
+                <input type="checkbox" />
+                <span>Show also inactive Admin Alert Types</span>
+            </label>
+        </div>
+        <button type="button" class="aa-pin" aria-label="Pin filter bar" title="Pin filter bar"><span aria-hidden="true"></span></button>
+    </section>
+
+    <section class="aa-tabs" aria-label="Alert status">
+        <button type="button" class="active">Unassigned (797)</button>
+        <button type="button">Assigned to Me (0)</button>
+        <button type="button">Assigned to Others (8)</button>
+        <button type="button">Acknowledged (223)</button>
+    </section>
+
+    <section class="aa-table-card" aria-label="Alerts table">
+        <div class="aa-table-toolbar">
+            <h2>Alerts (0 selected)</h2>
+            <div class="aa-toolbar-actions">
+                <button type="button" class="aa-text-action" disabled>Acknowledge</button>
+                <button type="button" class="aa-text-action">Assign <span aria-hidden="true">v</span></button>
+                <button type="button" class="aa-refresh" aria-label="Refresh alerts"><span aria-hidden="true"></span>Refresh</button>
+                <button type="button" class="aa-icon-action aa-settings" aria-label="Settings" title="Settings (Ctrl+,)"><span aria-hidden="true">&#9881;</span></button>
+                <button type="button" class="aa-icon-action aa-export" aria-label="Export alerts"><span aria-hidden="true"></span></button>
+                <button type="button" class="aa-icon-action compact" aria-label="More actions">v</button>
+            </div>
+        </div>
+
+        <div class="aa-filter-strip">1 table filter active: Person ID</div>
+
+        <div class="aa-table-wrap">
+            <table class="aa-table">
+                <thead>
+                    <tr>
+                        <th class="aa-select-col"><input type="checkbox" aria-label="Select all alerts" /></th>
+                        <th>User First Name</th>
+                        <th>User Last Name</th>
+                        <th class="aa-date-col">Date <span aria-hidden="true">|=</span></th>
+                        <th>Time Type Group Code</th>
+                        <th>Time Type Group Name</th>
+                        <th class="aa-value-col">Value</th>
+                        <th>Message</th>
+                        <th>Period Start Date</th>
+                        <th>Period End Date</th>
+                        <th class="aa-row-action-col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var alert in alerts)
+                    {
+                        <tr>
+                            <td class="aa-select-col"><input type="checkbox" aria-label="Select alert for @alert.FirstName @alert.LastName on @alert.Date" /></td>
+                            <td>@alert.FirstName</td>
+                            <td>@alert.LastName</td>
+                            <td>@alert.Date</td>
+                            <td>@alert.Code</td>
+                            <td>@alert.GroupName</td>
+                            <td>@alert.Value</td>
+                            <td>@alert.Message</td>
+                            <td>@alert.PeriodStart</td>
+                            <td>@alert.PeriodEnd</td>
+                            <td class="aa-row-action-col"><button type="button" aria-label="Open alert details">></button></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
