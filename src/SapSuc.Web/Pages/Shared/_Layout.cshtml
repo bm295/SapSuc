@@ -17,8 +17,10 @@
 <body class="sf-body">
     <header class="sf-topbar" role="banner">
         <div class="sf-brand">
-            <span class="sf-logo">SAP</span>
-            <span class="sf-product">SuccessFactors</span>
+            <a class="sf-brand-home" href="/" aria-label="Go to Home Page">
+                <span class="sf-logo">SAP</span>
+                <span class="sf-product">SuccessFactors</span>
+            </a>
             @if (isHomePage)
             {
                 <span class="sf-section">Home</span>
@@ -29,7 +31,7 @@
             }
         </div>
         <div class="sf-search" role="search">
-            <input id="global-search" type="search" aria-label="Action Search" placeholder="Search for actions or people" autocomplete="off" />
+            <input id="global-search" type="search" aria-label="Action Search" placeholder="Search for actions or people" autocomplete="off" aria-autocomplete="list" aria-controls="global-search-suggestions" aria-expanded="false" />
             <div id="global-search-suggestions" class="sf-suggestions" role="listbox" aria-label="Search suggestions" hidden></div>
         </div>
         <div class="sf-actions" aria-label="Header actions">
@@ -59,6 +61,9 @@
                 { label: 'Manage Permission Roles', url: '/ManagePermissionRoles' }
             ];
 
+            let currentMatches = [];
+            let activeIndex = -1;
+
             function isSubsequence(query, text) {
                 let qi = 0;
                 for (let ti = 0; ti < text.length && qi < query.length; ti++) {
@@ -76,19 +81,68 @@
                 });
             }
 
-            function render(matches) {
-                box.innerHTML = '';
-                if (matches.length === 0) {
-                    box.hidden = true;
+            function setExpanded(isExpanded) {
+                input.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+            }
+
+            function clearActiveOption() {
+                activeIndex = -1;
+                input.removeAttribute('aria-activedescendant');
+            }
+
+            function getSuggestionItems() {
+                return Array.from(box.querySelectorAll('.sf-suggestion-item'));
+            }
+
+            function hideSuggestions() {
+                box.hidden = true;
+                setExpanded(false);
+                clearActiveOption();
+            }
+
+            function setActiveIndex(index) {
+                const items = getSuggestionItems();
+                if (items.length === 0) {
+                    clearActiveOption();
                     return;
                 }
 
-                for (const match of matches) {
+                activeIndex = (index + items.length) % items.length;
+                items.forEach(function (item, itemIndex) {
+                    const isActive = itemIndex === activeIndex;
+                    item.classList.toggle('is-active', isActive);
+                    item.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                    if (isActive) {
+                        input.setAttribute('aria-activedescendant', item.id);
+                        item.scrollIntoView({ block: 'nearest' });
+                    }
+                });
+            }
+
+            function render(matches) {
+                currentMatches = matches;
+                clearActiveOption();
+                box.innerHTML = '';
+                if (matches.length === 0) {
+                    hideSuggestions();
+                    return;
+                }
+
+                for (const [index, match] of matches.entries()) {
                     const btn = document.createElement('button');
                     btn.type = 'button';
+                    btn.id = 'global-search-suggestion-' + index;
                     btn.className = 'sf-suggestion-item';
                     btn.textContent = match.label;
                     btn.setAttribute('role', 'option');
+                    btn.setAttribute('aria-selected', 'false');
+                    btn.tabIndex = -1;
+                    btn.addEventListener('mouseenter', function () {
+                        setActiveIndex(index);
+                    });
+                    btn.addEventListener('mousedown', function (e) {
+                        e.preventDefault();
+                    });
                     btn.addEventListener('click', function () {
                         window.location.href = match.url;
                     });
@@ -96,6 +150,7 @@
                 }
 
                 box.hidden = false;
+                setExpanded(true);
             }
 
             input.addEventListener('input', function () {
@@ -103,20 +158,32 @@
             });
 
             input.addEventListener('keydown', function (e) {
-                if (e.key === 'Enter') {
-                    const matches = getMatches(input.value);
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    if (box.hidden) {
+                        render(getMatches(input.value));
+                    }
+
+                    if (currentMatches.length > 0) {
+                        e.preventDefault();
+                        const offset = e.key === 'ArrowDown' ? 1 : -1;
+                        const startIndex = e.key === 'ArrowDown' ? 0 : currentMatches.length - 1;
+                        setActiveIndex(activeIndex === -1 ? startIndex : activeIndex + offset);
+                    }
+                } else if (e.key === 'Enter') {
+                    const matches = box.hidden ? getMatches(input.value) : currentMatches;
                     if (matches.length > 0) {
                         e.preventDefault();
-                        window.location.href = matches[0].url;
+                        const selectedIndex = activeIndex === -1 ? 0 : activeIndex;
+                        window.location.href = matches[selectedIndex].url;
                     }
                 } else if (e.key === 'Escape') {
-                    box.hidden = true;
+                    hideSuggestions();
                 }
             });
 
             document.addEventListener('click', function (e) {
                 if (!box.contains(e.target) && e.target !== input) {
-                    box.hidden = true;
+                    hideSuggestions();
                 }
             });
         })();

@@ -1,74 +1,101 @@
 @page "/ManagePermissionRoles"
+@using System.Text.Encodings.Web
 @{
     ViewData["Title"] = "Manage Permission Roles";
 
     var roles = new[]
     {
-        new { Id = 81, Name = "Administrators", UserType = "Employee", Description = "This role grants system administrators Check Tool access, configuration export, quick fixes, and other administrative permissions.", Status = "Active", RbpOnly = true, LastModified = "Apr 10, 2025" },
-        new { Id = 622, Name = "All Employees", UserType = "Employee", Description = "This role grants the appropriate user permissions to all Employees. It does not include permissions for Reports that require elevated access.", Status = "Active", RbpOnly = false, LastModified = "Mar 26, 2025" },
-        new { Id = 621, Name = "Managers", UserType = "Employee", Description = "This role grants the appropriate user permissions to all Managers in the organization.", Status = "Active", RbpOnly = true, LastModified = "Mar 26, 2025" },
-        new { Id = 758, Name = "TIH - Team View", UserType = "Employee", Description = "Access to Team View in Growth Portfolio for all managers in the organization.", Status = "Active", RbpOnly = true, LastModified = "Mar 25, 2025" },
-        new { Id = 720, Name = "Succession Planners", UserType = "Employee", Description = "Succession planning role for designated planning users.", Status = "Active", RbpOnly = false, LastModified = "Jan 2, 2025" },
-        new { Id = 623, Name = "Employee Search", UserType = "Employee", Description = "This role allows all Employees to search for all employees by granting the role to Everyone and also setting the target population.", Status = "Active", RbpOnly = true, LastModified = "Jun 23, 2023" },
-        new { Id = 221, Name = "Homepage3 Tile View", UserType = "Employee", Description = "Homepage3 Tile View permissions.", Status = "Active", RbpOnly = false, LastModified = "Jan 24, 2019" },
-        new { Id = 121, Name = "Default Pixel Perfect Templates Role", UserType = "Employee", Description = "Created by system automatically.", Status = "Active", RbpOnly = false, LastModified = "May 13, 2016" }
+        new { Name = "Admin User", UserType = "", Description = "Ability to edit the job code in the profile", Status = "ACTIVE", CreatedFrom = "", LastModified = "2020-11-25", EditUrl = "/ManagePermissionRoles/EditAdministrators?role=Admin%20User" },
+        new { Name = "Learning Admin", UserType = "", Description = "", Status = "ACTIVE", CreatedFrom = "", LastModified = "2020-10-14", EditUrl = "/ManagePermissionRoles/EditAdministrators?role=Learning%20Admin" },
+        new { Name = "Succession Planners", UserType = "", Description = "Succession Planners", Status = "ACTIVE", CreatedFrom = "", LastModified = "2020-10-14", EditUrl = "/ManagePermissionRoles/EditAdministrators?role=Succession%20Planners" },
+        new { Name = "Learning Access", UserType = "", Description = "End User Access to Learning (LMS + CDP)", Status = "ACTIVE", CreatedFrom = "", LastModified = "2020-10-14", EditUrl = "/ManagePermissionRoles/EditAdministrators?role=Learning%20Access" },
+        new { Name = "Planners (Compensation Permission Role)", UserType = "", Description = "Created for compensation field based permission", Status = "ACTIVE", CreatedFrom = "Compensation", LastModified = "2020-10-14", EditUrl = "/ManagePermissionRoles/EditAdministrators?role=Planners%20%28Compensation%20Permission%20Role%29" },
+        new { Name = "Manager-GA", UserType = "", Description = "Manager Access for Global Assignments", Status = "ACTIVE", CreatedFrom = "", LastModified = "2020-10-14", EditUrl = "/ManagePermissionRoles/EditAdministrators?role=Manager-GA" },
+        new { Name = "Comp Admin (Compensation Permission Role)", UserType = "", Description = "Created for compensation field based permission", Status = "ACTIVE", CreatedFrom = "Compensation", LastModified = "2020-10-14", EditUrl = "/ManagePermissionRoles/EditAdministrators?role=Comp%20Admin%20%28Compensation%20Permission%20Role%29" },
+        new { Name = "HR (Compensation Permission Role)", UserType = "", Description = "Created for compensation field based permission", Status = "ACTIVE", CreatedFrom = "Compensation", LastModified = "2020-10-14", EditUrl = "/ManagePermissionRoles/EditAdministrators?role=HR%20%28Compensation%20Permission%20Role%29" },
+        new { Name = "Recruiters", UserType = "", Description = "Features and Reports for Recruiters", Status = "ACTIVE", CreatedFrom = "", LastModified = "2020-10-14", EditUrl = "/ManagePermissionRoles/EditAdministrators?role=Recruiters" },
+        new { Name = "Manager Role", UserType = "", Description = "Manager Access to Employee, Goal, Development and Talent info for their Org", Status = "ACTIVE", CreatedFrom = "", LastModified = "2020-10-14", EditUrl = "/ManagePermissionRoles/EditAdministrators?role=Manager%20Role" }
     };
 }
 
 <div class="mpr-page">
-    <nav class="mpr-breadcrumb" aria-label="Breadcrumb">
-        <a href="/">Admin Center</a> <span>/</span> <span>Manage Permission Roles</span>
-    </nav>
-
-    <header class="mpr-header">
-        <h1>Manage Permission Roles</h1>
-        <p>Different users should have different access to the information in the application. A role controls the access rights of its users to the application or employee data. Each role has its own access permissions that you define. You can also limit what a group can access.</p>
+    <header class="mpr-page-header">
+        <h1>Admin Center</h1>
+        <div class="mpr-header-links" aria-label="Admin resources">
+            <a href="#">Go To Customer Community</a>
+            <a href="#">Admin Resources</a>
+            <a href="#">Handout Builder</a>
+        </div>
     </header>
 
-    <section class="mpr-card" aria-label="Roles table">
-        <div class="mpr-toolbar">
-            <h2>Roles</h2>
-            <div class="mpr-tools">
-                <input type="search" placeholder="Search for a role" aria-label="Search for a role" />
-                <button type="button" class="mpr-create">Create</button>
-                <button type="button" class="mpr-icon" aria-label="Sort">?</button>
-                <button type="button" class="mpr-icon" aria-label="Filter">?</button>
+    <nav class="mpr-back" aria-label="Breadcrumb">
+        Back to <a href="/AdminCenter">Admin Center</a>
+    </nav>
+
+    <section class="mpr-intro" aria-labelledby="mpr-title">
+        <h2 id="mpr-title">Permission Role List</h2>
+        <p>Different users should have different access to the information in the application. A <em>role</em> controls the access rights a user (or a group) has to the application or employee data. Each role has its own set of access permissions that you define. You can also limit exactly what a group can access.</p>
+    </section>
+
+    <form class="mpr-search-row" role="search" autocomplete="off">
+        <label class="visually-hidden" for="role-search">Type role name</label>
+        <div class="mpr-search-box">
+            <input id="role-search" type="search" placeholder="Type role name..." aria-autocomplete="list" aria-controls="role-search-results" aria-expanded="false" />
+            <button type="submit" aria-label="Search role">
+                <span aria-hidden="true"></span>
+            </button>
+        </div>
+        <div id="role-search-results" class="mpr-search-results" role="listbox" aria-label="Role search results" hidden></div>
+    </form>
+
+    <section class="mpr-list" aria-label="Permission roles">
+        <div class="mpr-listbar">
+            <button class="mpr-create" type="button">
+                <span aria-hidden="true">+</span>
+                Create New
+            </button>
+            <div class="mpr-pager" aria-label="Role list pagination">
+                <label for="mpr-items-per-page">Items per page</label>
+                <select id="mpr-items-per-page">
+                    <option>10</option>
+                    <option>20</option>
+                    <option>50</option>
+                </select>
+                <button type="button" aria-label="First page">|&lt;</button>
+                <button type="button" aria-label="Previous page">&lt;</button>
+                <span>Page</span>
+                <input type="text" value="1" aria-label="Current page" />
+                <span>of 4</span>
+                <button type="button" aria-label="Next page">&gt;</button>
+                <button type="button" aria-label="Last page">&gt;|</button>
             </div>
         </div>
 
         <div class="table-responsive">
-            <table class="table table-sm mpr-table">
+            <table class="mpr-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Name</th>
+                        <th>Permission Role</th>
                         <th>User Type</th>
                         <th>Description</th>
                         <th>Status</th>
-                        <th>RBP-Only</th>
+                        <th>Created From</th>
                         <th>Last Modified</th>
-                        <th>Actions</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var role in roles)
                     {
-                        var editUrl = role.Name == "Administrators" ? "/ManagePermissionRoles/EditAdministrators" : "#";
-
                         <tr>
-                            <td>@role.Id</td>
-                            <td><a href="@editUrl">@role.Name</a></td>
+                            <td><a href="@role.EditUrl">@role.Name</a></td>
                             <td>@role.UserType</td>
                             <td>@role.Description</td>
-                            <td class="mpr-status">@role.Status</td>
-                            <td>@(role.RbpOnly ? "?" : string.Empty)</td>
+                            <td>@role.Status</td>
+                            <td>@role.CreatedFrom</td>
                             <td>@role.LastModified</td>
                             <td class="mpr-actions">
-                                <a href="#">Add Role Assignments</a>
-                                <a href="@editUrl">Edit</a>
-                                <a href="#">Copy</a>
-                                <a href="#">Delete</a>
-                                <a href="#">View History</a>
+                                <a href="@role.EditUrl">Take action</a><button type="button" aria-label="Open actions for @role.Name"></button>
                             </td>
                         </tr>
                     }
@@ -77,3 +104,128 @@
         </div>
     </section>
 </div>
+
+<script>
+    (function () {
+        const form = document.querySelector('.mpr-search-row');
+        const input = document.getElementById('role-search');
+        const results = document.getElementById('role-search-results');
+        if (!form || !input || !results) return;
+
+        const roles = [
+            @foreach (var role in roles)
+            {
+                <text>{ label: '@JavaScriptEncoder.Default.Encode(role.Name)', description: '@JavaScriptEncoder.Default.Encode(role.Description)', url: '@role.EditUrl' },</text>
+            }
+        ];
+
+        let matches = [];
+        let activeIndex = -1;
+
+        function findMatches(value) {
+            const query = value.trim().toLowerCase();
+            if (!query) return [];
+            return roles.filter(function (role) {
+                return role.label.toLowerCase().includes(query);
+            });
+        }
+
+        function hideResults() {
+            results.hidden = true;
+            input.setAttribute('aria-expanded', 'false');
+            input.removeAttribute('aria-activedescendant');
+            activeIndex = -1;
+        }
+
+        function getItems() {
+            return Array.from(results.querySelectorAll('.mpr-search-result'));
+        }
+
+        function setActive(index) {
+            const items = getItems();
+            if (items.length === 0) {
+                hideResults();
+                return;
+            }
+
+            activeIndex = (index + items.length) % items.length;
+            items.forEach(function (item, itemIndex) {
+                const isActive = itemIndex === activeIndex;
+                item.classList.toggle('is-active', isActive);
+                item.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                if (isActive) {
+                    input.setAttribute('aria-activedescendant', item.id);
+                    item.scrollIntoView({ block: 'nearest' });
+                }
+            });
+        }
+
+        function render() {
+            matches = findMatches(input.value);
+            results.innerHTML = '';
+            activeIndex = -1;
+
+            if (matches.length === 0) {
+                hideResults();
+                return;
+            }
+
+            matches.forEach(function (role, index) {
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.id = 'role-search-result-' + index;
+                item.className = 'mpr-search-result';
+                item.setAttribute('role', 'option');
+                item.setAttribute('aria-selected', 'false');
+                item.innerHTML = '<strong></strong><span></span>';
+                item.querySelector('strong').textContent = role.label;
+                item.querySelector('span').textContent = role.description || 'Permission role detail';
+                item.addEventListener('mouseenter', function () {
+                    setActive(index);
+                });
+                item.addEventListener('click', function () {
+                    window.location.href = role.url;
+                });
+                results.appendChild(item);
+            });
+
+            results.hidden = false;
+            input.setAttribute('aria-expanded', 'true');
+        }
+
+        input.addEventListener('input', render);
+        input.addEventListener('focus', function () {
+            if (input.value.trim()) render();
+        });
+        input.addEventListener('keydown', function (event) {
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                if (results.hidden) render();
+                if (matches.length > 0) {
+                    event.preventDefault();
+                    const offset = event.key === 'ArrowDown' ? 1 : -1;
+                    const start = event.key === 'ArrowDown' ? 0 : matches.length - 1;
+                    setActive(activeIndex === -1 ? start : activeIndex + offset);
+                }
+            } else if (event.key === 'Enter' && matches.length > 0) {
+                event.preventDefault();
+                window.location.href = matches[activeIndex === -1 ? 0 : activeIndex].url;
+            } else if (event.key === 'Escape') {
+                hideResults();
+            }
+        });
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            matches = findMatches(input.value);
+            if (matches.length > 0) {
+                window.location.href = matches[activeIndex === -1 ? 0 : activeIndex].url;
+            }
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!form.contains(event.target)) {
+                hideResults();
+            }
+        });
+    })();
+</script>

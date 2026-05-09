@@ -1,98 +1,219 @@
 @page "/ManagePermissionRoles/EditAdministrators"
 @{
-    ViewData["Title"] = "Edit Administrators";
+    ViewData["Title"] = "Permission Role Detail";
 
-    var categories = new[]
+    var roleProfiles = new[]
     {
-        "Manage Competencies and Skills",
-        "Manage System Properties",
-        "Manage User",
-        "Manage Identity Account and Group",
-        "Metadata Framework",
-        "Manage Business Configuration",
-        "Admin Alerts Object Permissions",
-        "Manage Mass Data Management",
-        "Business Rules Object Permissions",
-        "Diagnostic Tool",
-        "Check Tool",
-        "Configuration Transport Center",
-        "Manage Integration Tools",
-        "Manage Security",
-        "Common Super Domain",
-        "Admin Center Permissions",
-        "Manage Extensions on SAP BTP",
-        "Manage Security Center",
-        "Card Service"
+        new { Name = "Admin User", Description = "Ability to edit the job code in the profile" },
+        new { Name = "Learning Admin", Description = "Learning administrator access" },
+        new { Name = "Succession Planners", Description = "Succession Planners" },
+        new { Name = "Learning Access", Description = "End User Access to Learning (LMS + CDP)" },
+        new { Name = "Planners (Compensation Permission Role)", Description = "Created for compensation field based permission" },
+        new { Name = "Manager-GA", Description = "Manager Access for Global Assignments" },
+        new { Name = "Comp Admin (Compensation Permission Role)", Description = "Created for compensation field based permission" },
+        new { Name = "HR (Compensation Permission Role)", Description = "Created for compensation field based permission" },
+        new { Name = "Recruiters", Description = "Features and Reports for Recruiters" },
+        new { Name = "Manager Role", Description = "Manager Access to Employee, Goal, Development and Talent info for their Org" }
     };
 
-    var permissions = new[]
-    {
-        new { Name = "Access Check Tool", Description = "Authorizes users to access the Check Tool.", Highlight = true },
-        new { Name = "Allow Configuration Export", Description = "Authorizes users to attach configuration information to a ticket when they need to create one.", Highlight = true },
-        new { Name = "Allow Check Tool Quick Fix", Description = "Authorizes users to fix configuration and data issues from Check Tool results.", Highlight = true }
-    };
+    var requestedRole = Request.Query["role"].ToString();
+    var role = roleProfiles.FirstOrDefault(item => item.Name.Equals(requestedRole, StringComparison.OrdinalIgnoreCase)) ?? roleProfiles[0];
 }
 
-<div class="er-page">
-    <nav class="er-breadcrumb" aria-label="Breadcrumb">
-        <a href="/AdminCenter">Admin Center</a>
-        <span>/</span>
-        <a href="/ManagePermissionRoles">Manage Permission Roles</a>
-        <span>/</span>
-        <span>Edit Role for Administrators</span>
-    </nav>
-
-    <header class="er-header">
-        <h1>Edit Administrators</h1>
+<div class="prd-page">
+    <header class="prd-page-header">
+        <h1>Admin Center</h1>
+        <div class="prd-header-links" aria-label="Admin resources">
+            <a href="#">Go To Customer Community</a>
+            <a href="#">Admin Resources</a>
+            <a href="#">Handout Builder</a>
+        </div>
     </header>
 
-    <ol class="er-stepper" aria-label="Edit role progress">
-        <li>
-            <span>1</span>
-            <strong>Basic Information</strong>
-        </li>
-        <li class="active">
-            <span>2</span>
-            <strong>Add Permissions</strong>
-        </li>
-        <li>
-            <span>3</span>
-            <strong>Preview</strong>
-        </li>
-    </ol>
+    <nav class="prd-back" aria-label="Breadcrumb">
+        Back to <a href="/AdminCenter">Admin Center</a>
+    </nav>
 
-    <section class="er-permissions-shell" aria-label="Add permissions">
-        <aside class="er-category-pane" aria-label="Permission categories">
-            <ul>
-                @foreach (var category in categories)
-                {
-                    var isSelected = category == "Check Tool";
-                    <li class="@(isSelected ? "selected" : string.Empty)">
-                        <button type="button">@category</button>
-                    </li>
-                }
-            </ul>
-            <div class="er-category-scrollbar" aria-hidden="true">
-                <span></span>
-            </div>
-        </aside>
+    <h2>Permission Role Detail</h2>
 
-        <div class="er-permission-pane">
-            <div class="er-permission-list" role="list">
-                @foreach (var permission in permissions)
-                {
-                    <label class="er-permission-row @(permission.Highlight ? "highlight" : string.Empty)" role="listitem">
-                        <span class="er-check">
-                            <input type="checkbox" checked />
-                        </span>
-                        <span class="er-permission-name">@permission.Name</span>
-                        <span class="er-permission-description">@permission.Description</span>
-                    </label>
-                }
-            </div>
-            <div class="er-permission-scrollbar" aria-hidden="true">
-                <span></span>
-            </div>
+    <section class="prd-shell" aria-label="Permission role detail">
+        <a class="prd-print" href="#">Print Preview<span aria-hidden="true"></span></a>
+
+        <div class="prd-scroll">
+            <section class="prd-section prd-name-description" aria-labelledby="prd-name-title">
+                <h3 id="prd-name-title">1. Name and description</h3>
+                <div class="prd-field-grid">
+                    <label for="prd-role-name"><span aria-hidden="true">*</span> Role Name:</label>
+                    <input id="prd-role-name" type="text" value="@role.Name" />
+                    <label for="prd-description">Description:</label>
+                    <textarea id="prd-description">@role.Description</textarea>
+                </div>
+            </section>
+
+            <section class="prd-section prd-permissions" aria-labelledby="prd-permission-title">
+                <h3 id="prd-permission-title">2. Permission settings</h3>
+                <p>Specify what permissions users in this role should have.</p>
+                <button id="prd-open-permissions" type="button" class="prd-permission-button" aria-haspopup="dialog" aria-controls="permission-settings-dialog">Permission...</button>
+
+                <div class="prd-permission-bar">
+                    <span class="prd-caret" aria-hidden="true"></span>
+                    <strong>Permission not requiring target</strong>
+                </div>
+
+                <div class="prd-permission-block">
+                    <h4>General User Permission</h4>
+                    <ul>
+                        <li>User Login</li>
+                        <li>Live Profile Access</li>
+                    </ul>
+                </div>
+
+                <div class="prd-permission-bar">
+                    <span class="prd-caret" aria-hidden="true"></span>
+                    <strong>Permission requiring target</strong>
+                </div>
+
+                <div class="prd-permission-block prd-targeted">
+                    <h4>Employee Data</h4>
+                    <div class="prd-permission-line">
+                        <span>Job Classification</span>
+                        <span>View:Edit</span>
+                    </div>
+                    <h4>Goals</h4>
+                    <div class="prd-permission-line">
+                        <span>Goal Management Access</span>
+                        <span></span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="prd-section prd-grant" aria-labelledby="prd-grant-title">
+                <h3 id="prd-grant-title">3. Grant this role to...</h3>
+                <p>Select people or groups to receive this role. Users are granted access according to the permission settings and target population configured above.</p>
+            </section>
+        </div>
+
+        <div class="prd-footer">
+            <button type="button" class="prd-save">Save Changes</button>
+            <button type="button" class="prd-cancel">Cancel</button>
         </div>
     </section>
 </div>
+
+<div id="permission-settings-dialog" class="ps-dialog" role="dialog" aria-modal="true" aria-labelledby="ps-title" hidden>
+    <div class="ps-panel">
+        <header class="ps-header">
+            <h2 id="ps-title">Permission settings</h2>
+        </header>
+
+        <div class="ps-body">
+            <p class="ps-intro">
+                Specify what permissions users in this role should have.
+                <span class="ps-help" aria-label="More information">?</span>
+                <strong>*</strong> = Access period can be defined at the granting rule level.
+                <strong>&dagger;</strong> = Target needs to be defined.
+                <span class="ps-help" aria-label="More information">?</span>
+            </p>
+
+            <div class="ps-content">
+                <nav class="ps-categories" aria-label="Permission categories">
+                    <div class="ps-tree-group collapsed">
+                        <span aria-hidden="true"></span>
+                        <strong>User Permissions</strong>
+                    </div>
+                    <div class="ps-tree-group expanded">
+                        <span aria-hidden="true"></span>
+                        <strong>Administrator Permissions</strong>
+                    </div>
+                    <a href="#">Manage Calibration</a>
+                    <a href="#">Manage Goals</a>
+                    <a href="#">Manage Career Development</a>
+                    <a href="#">Manage Continuous Performance</a>
+                    <a href="#">Manage Succession</a>
+                    <a href="#">Manage Presentations</a>
+                    <a href="#">Manage Talent Card</a>
+                    <a href="#">Manage Foundation Objects</a>
+                    <a href="#">Manage Foundation Objects</a>
+                    <a href="#">Manage Deductions</a>
+                    <a href="#">Manage Workflows</a>
+                    <a href="#">Admin Alerts</a>
+                    <a class="selected" href="#" aria-current="true">Check Tool</a>
+                    <a href="#">Manage Compensation</a>
+                    <a href="#">Manage Recruiting</a>
+                </nav>
+
+                <section class="ps-permissions" aria-labelledby="ps-check-tool-title">
+                    <h3 id="ps-check-tool-title">Check Tool</h3>
+
+                    <div class="ps-check-list" role="list">
+                        <label class="ps-check-row" role="listitem">
+                            <input type="checkbox" checked />
+                            <span>Select All</span>
+                        </label>
+                        <label class="ps-check-row ps-access-check-tool" role="listitem">
+                            <input type="checkbox" checked />
+                            <span>Access Check Tool</span>
+                            <span class="ps-help ps-tooltip-anchor" tabindex="0" aria-describedby="access-check-tool-tooltip">?</span>
+                            <span id="access-check-tool-tooltip" class="ps-tooltip" role="tooltip">Allows users to access a check tool that can help them identify data and configuration issues.</span>
+                        </label>
+                        <label class="ps-check-row ps-config-export" role="listitem">
+                            <input type="checkbox" checked />
+                            <span>Allow Configuration Export</span>
+                            <span class="ps-help ps-tooltip-anchor" tabindex="0" aria-describedby="config-export-tooltip">?</span>
+                            <span id="config-export-tooltip" class="ps-tooltip" role="tooltip">Allows users to export system configuration data from within the check tool.</span>
+                        </label>
+                        <label class="ps-check-row ps-quick-fix" role="listitem">
+                            <input type="checkbox" checked />
+                            <span>Allow Check Tool Quick Fix</span>
+                            <span class="ps-help ps-tooltip-anchor" tabindex="0" aria-describedby="quick-fix-tooltip">?</span>
+                            <span id="quick-fix-tooltip" class="ps-tooltip" role="tooltip">Allows users to fix configuration and data issues.</span>
+                        </label>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <footer class="ps-footer">
+            <button id="ps-done" type="button" class="ps-primary">Done</button>
+            <button id="ps-cancel" type="button">Cancel</button>
+        </footer>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const openButton = document.getElementById('prd-open-permissions');
+        const dialog = document.getElementById('permission-settings-dialog');
+        const doneButton = document.getElementById('ps-done');
+        const cancelButton = document.getElementById('ps-cancel');
+        if (!openButton || !dialog || !doneButton || !cancelButton) return;
+
+        function openDialog() {
+            dialog.hidden = false;
+            document.body.classList.add('ps-dialog-open');
+            doneButton.focus();
+        }
+
+        function closeDialog() {
+            dialog.hidden = true;
+            document.body.classList.remove('ps-dialog-open');
+            openButton.focus();
+        }
+
+        openButton.addEventListener('click', openDialog);
+        doneButton.addEventListener('click', closeDialog);
+        cancelButton.addEventListener('click', closeDialog);
+
+        dialog.addEventListener('click', function (event) {
+            if (event.target === dialog) {
+                closeDialog();
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && !dialog.hidden) {
+                closeDialog();
+            }
+        });
+    })();
+</script>
