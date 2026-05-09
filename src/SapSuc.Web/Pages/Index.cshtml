@@ -1,349 +1,73 @@
 @page
 @model IndexModel
 @{
-    ViewData["Title"] = "Proxy Management";
+    ViewData["Title"] = "Home";
 }
 
-<div class="proxy-shell">
-    <section class="proxy-header">
-        <div>
-            <p class="eyebrow">Workforce administration</p>
-            <h1>Proxy Management</h1>
-        </div>
-        @if (Model.CanCreateProxyAssignments)
-        {
-            <a class="btn btn-primary" href="#assignment-form">New assignment</a>
-        }
-        else
-        {
-            <a class="btn btn-outline-primary" href="#proxy-settings">Proxy settings</a>
-        }
+<div class="sf-home">
+    <nav class="sf-home-links" aria-label="Home navigation">
+        <a class="active" href="#">HomePage</a>
+        <a href="#">Ask HR</a>
+    </nav>
+
+    <section class="sf-hero" aria-label="Welcome banner">
+        <div class="sf-hero-overlay"></div>
+        <h1>Good afternoon!</h1>
     </section>
 
-    @if (TempData["SuccessMessage"] is string successMessage)
-    {
-        <div class="alert alert-success proxy-alert" role="status">@successMessage</div>
-    }
-
-    @if (TempData["WarningMessage"] is string warningMessage)
-    {
-        <div class="alert alert-warning proxy-alert" role="status">@warningMessage</div>
-    }
-
-    <section class="proxy-mode-panel" aria-labelledby="proxy-mode-title">
-        <div class="proxy-mode-main">
-            <span class="mode-badge @(Model.CurrentView.IsProxying ? "mode-active" : string.Empty)">
-                @Model.CurrentView.ModeLabel
-            </span>
-            <div>
-                <h2 id="proxy-mode-title">@Model.CurrentView.DisplayName</h2>
-                <span>@Model.CurrentView.Detail</span>
-            </div>
+    <section class="sf-block">
+        <h2>Quick Actions</h2>
+        <div class="sf-actions-grid">
+            <a class="qa-tile qa-red" href="#"><span>Request Time Off</span></a>
+            <a class="qa-tile qa-pink" href="#"><span>Record Time</span></a>
+            <a class="qa-tile qa-purple" href="#"><span>Manage Goals</span></a>
+            <a class="qa-tile qa-blue" href="#"><span>Recognize</span></a>
+            <a class="qa-tile qa-slate" href="#"><span>Saved For Later</span></a>
         </div>
+    </section>
 
-        <div class="proxy-mode-actions">
-            <form method="post" asp-page-handler="SwitchUser" class="proxy-switch-form">
-                <input type="hidden" name="Status" value="@Model.StatusFilter" />
-                <div class="form-field proxy-select-field">
-                    <label asp-for="ProxySession.EmployeeId" class="form-label">Proxy as</label>
-                    <select asp-for="ProxySession.EmployeeId" asp-items="Model.EmployeeOptions" class="form-select"></select>
-                    <span asp-validation-for="ProxySession.EmployeeId" class="text-danger"></span>
+    <section class="sf-block">
+        <article class="sf-spotlight-card">
+            <div class="sf-spotlight-copy">
+                <p class="sf-eyebrow">Hiring Experience Survey</p>
+                <h3>Help us to be better.</h3>
+                <p>Survey ends on Jul 4, 2021</p>
+                <a href="#">Start Survey</a>
+            </div>
+            <div class="sf-spotlight-media"></div>
+        </article>
+    </section>
+
+    <section class="sf-block">
+        <h2>Organizational Updates</h2>
+        <div class="sf-update-grid">
+            <article class="sf-update-card">
+                <div class="sf-update-image image-office"></div>
+                <div class="sf-update-body">
+                    <h3>Office 365 Integration</h3>
+                    <p>Powered by Intelligent Services</p>
                 </div>
-                <button class="btn btn-primary" type="submit">Switch user</button>
-            </form>
-
-            @if (Model.CurrentView.IsProxying)
-            {
-                <form method="post" asp-page-handler="ClearProxy">
-                    <input type="hidden" name="Status" value="@Model.StatusFilter" />
-                    <button class="btn btn-outline-secondary" type="submit">Return to admin</button>
-                </form>
-            }
-        </div>
-
-        <div class="proxy-impact-grid" aria-label="Current proxy view impact">
-            <div>
-                <span>@Model.CurrentView.PrimaryLabel</span>
-                <strong>@Model.CurrentView.PrimaryCount</strong>
-            </div>
-            <div>
-                <span>@Model.CurrentView.SecondaryLabel</span>
-                <strong>@Model.CurrentView.SecondaryCount</strong>
-            </div>
-            <div>
-                <span>Leave approval</span>
-                <strong>@Model.CurrentView.ApprovalCount</strong>
-            </div>
-        </div>
-    </section>
-
-    <section class="proxy-settings-panel" id="proxy-settings" aria-labelledby="proxy-settings-title">
-        <div class="settings-summary">
-            <span class="mode-badge @(Model.ProxySelfServiceEnabled ? "mode-active" : string.Empty)">
-                @(Model.ProxySelfServiceEnabled ? "Employee managed" : "Admin only")
-            </span>
-            <div>
-                <h2 id="proxy-settings-title">Proxy self-service</h2>
-                <span>@(Model.ProxySelfServiceEnabled ? "Employees can assign and remove their own proxies." : "Only administrators can assign and remove proxies.")</span>
-            </div>
-        </div>
-
-        @if (!Model.CurrentView.IsProxying)
-        {
-            <form method="post" asp-page-handler="UpdateSettings" class="settings-form">
-                <input type="hidden" name="Status" value="@Model.StatusFilter" />
-                <label class="toggle-row settings-toggle">
-                    <input asp-for="Settings.AllowEmployeeProxySelfService" class="form-check-input" />
-                    <span>
-                        <strong>Employee self-service</strong>
-                        <small class="toggle-on">Allowed</small>
-                        <small class="toggle-off">Admin only</small>
-                    </span>
-                </label>
-                <button class="btn btn-primary" type="submit">Save settings</button>
-            </form>
-        }
-        else
-        {
-            <span class="settings-note">Managed by administrators</span>
-        }
-    </section>
-
-    <section class="metric-grid" aria-label="Proxy assignment summary">
-        <div class="metric-tile">
-            <span class="metric-label">Active</span>
-            <strong>@Model.Summary.Active</strong>
-        </div>
-        <div class="metric-tile metric-tile-blue">
-            <span class="metric-label">Scheduled</span>
-            <strong>@Model.Summary.Scheduled</strong>
-        </div>
-        <div class="metric-tile metric-tile-amber">
-            <span class="metric-label">Ending soon</span>
-            <strong>@Model.Summary.EndingSoon</strong>
-        </div>
-        <div class="metric-tile metric-tile-neutral">
-            <span class="metric-label">Total</span>
-            <strong>@Model.Summary.Total</strong>
-        </div>
-    </section>
-
-    <div class="proxy-workspace">
-        <aside class="assignment-panel" id="assignment-form" aria-labelledby="assignment-form-title">
-            <div class="panel-heading">
-                <h2 id="assignment-form-title">New assignment</h2>
-            </div>
-
-            @if (!Model.CanCreateProxyAssignments)
-            {
-                <div class="lock-message">Only administrators can assign or remove proxies.</div>
-            }
-
-            <form method="post" asp-page-handler="Assign" class="proxy-form">
-                <div asp-validation-summary="ModelOnly" class="text-danger validation-summary"></div>
-
-                <fieldset class="proxy-fieldset" disabled="@(!Model.CanCreateProxyAssignments)">
-                    @if (Model.CurrentView.IsProxying)
-                    {
-                        <input type="hidden" asp-for="Input.DelegatorEmployeeId" />
-                        <div class="form-field">
-                            <label asp-for="Input.DelegatorEmployeeId" class="form-label">Delegator</label>
-                            <div class="readonly-field">@Model.AssignmentOwnerLabel</div>
-                            <span asp-validation-for="Input.DelegatorEmployeeId" class="text-danger"></span>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="form-field">
-                            <label asp-for="Input.DelegatorEmployeeId" class="form-label">Delegator</label>
-                            <select asp-for="Input.DelegatorEmployeeId" asp-items="Model.EmployeeOptions" class="form-select"></select>
-                            <span asp-validation-for="Input.DelegatorEmployeeId" class="text-danger"></span>
-                        </div>
-                    }
-
-                    <div class="form-field">
-                        <label asp-for="Input.ProxyEmployeeIds" class="form-label">Proxies</label>
-                        <div class="proxy-slot-grid">
-                            @for (var proxySlot = 0; proxySlot < Model.ProxySlotCount; proxySlot++)
-                            {
-                                var selectedProxyId = Model.Input.ProxyEmployeeIds.Count > proxySlot
-                                    ? Model.Input.ProxyEmployeeIds[proxySlot]
-                                    : Guid.Empty;
-
-                                <div class="form-field">
-                                    <label class="form-label" for="Input_ProxyEmployeeIds_@proxySlot">Proxy @(proxySlot + 1)</label>
-                                    <select id="Input_ProxyEmployeeIds_@proxySlot" name="Input.ProxyEmployeeIds[@proxySlot]" class="form-select">
-                                        @if (selectedProxyId == Guid.Empty)
-                                        {
-                                            <option value="@Guid.Empty" selected>None</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@Guid.Empty">None</option>
-                                        }
-
-                                        @foreach (var employeeOption in Model.EmployeeOptions)
-                                        {
-                                            var employeeId = Guid.Parse(employeeOption.Value!);
-                                            if (employeeId == selectedProxyId)
-                                            {
-                                                <option value="@employeeOption.Value" selected>@employeeOption.Text</option>
-                                            }
-                                            else
-                                            {
-                                                <option value="@employeeOption.Value">@employeeOption.Text</option>
-                                            }
-                                        }
-                                    </select>
-                                </div>
-                            }
-                        </div>
-                        <span asp-validation-for="Input.ProxyEmployeeIds" class="text-danger"></span>
-                    </div>
-
-                    <div class="date-grid">
-                        <div class="form-field">
-                            <label asp-for="Input.StartDate" class="form-label">Start date</label>
-                            <input asp-for="Input.StartDate" type="date" class="form-control" />
-                            <span asp-validation-for="Input.StartDate" class="text-danger"></span>
-                        </div>
-                        <div class="form-field">
-                            <label asp-for="Input.EndDate" class="form-label">End date</label>
-                            <input asp-for="Input.EndDate" type="date" class="form-control" />
-                            <span asp-validation-for="Input.EndDate" class="text-danger"></span>
-                        </div>
-                    </div>
-
-                    <label class="toggle-row">
-                        <input asp-for="Input.CanApproveLeave" class="form-check-input" />
-                        <span>
-                            <strong>Leave approvals</strong>
-                            <small class="toggle-on">Enabled</small>
-                            <small class="toggle-off">Standard</small>
-                        </span>
-                    </label>
-
-                    <button class="btn btn-primary w-100" type="submit">Assign proxies</button>
-                </fieldset>
-            </form>
-
-            @if (Model.CanImportProxyCsv)
-            {
-                <div class="panel-divider"></div>
-
-                <div class="panel-heading" id="csv-import">
-                    <h2>CSV import</h2>
+            </article>
+            <article class="sf-update-card">
+                <div class="sf-update-image image-hourglass"></div>
+                <div class="sf-update-body">
+                    <h3>Manage Pending Requests</h3>
                 </div>
-
-                <form method="post" asp-page-handler="Import" enctype="multipart/form-data" class="proxy-form">
-                    <div class="form-field">
-                        <label asp-for="Import.CsvFile" class="form-label">CSV file</label>
-                        <input asp-for="Import.CsvFile" type="file" class="form-control" accept=".csv,text/csv" />
-                        <span asp-validation-for="Import.CsvFile" class="text-danger"></span>
-                    </div>
-
-                    <div class="csv-schema">
-                        <span>USERID</span>
-                        <span>ASSIGNMENT_ID_USERID</span>
-                        <span>PROXYID</span>
-                        <span>ASSIGNMENT_ID_PROXYID</span>
-                        <span>START_DATE(yyyy-MM-dd HH:mm)</span>
-                        <span>END_DATE(yyyy-MM-dd HH:mm)</span>
-                        <span>All</span>
-                        <span>Remove All</span>
-                        <span>Time Off</span>
-                    </div>
-
-                    <button class="btn btn-outline-primary w-100" type="submit">Import CSV</button>
-                </form>
-            }
-        </aside>
-
-        <section class="assignment-list" aria-labelledby="assignment-list-title">
-            <div class="list-toolbar">
-                <div>
-                    <h2 id="assignment-list-title">Assignments</h2>
-                    <span>@Model.Assignments.Count record@(Model.Assignments.Count == 1 ? string.Empty : "s")</span>
+            </article>
+            <article class="sf-update-card">
+                <div class="sf-update-image image-sandbox"></div>
+                <div class="sf-update-body">
+                    <h3>Welcome to SAP SuccessFactors!</h3>
+                    <p>Start your "sandbox" experience here.</p>
                 </div>
-
-                <nav class="filter-tabs" aria-label="Assignment status filters">
-                    <a class="filter-tab @(Model.StatusFilter == "all" ? "active" : string.Empty)" asp-page="./Index" asp-route-status="all">All</a>
-                    <a class="filter-tab @(Model.StatusFilter == "active" ? "active" : string.Empty)" asp-page="./Index" asp-route-status="active">Active</a>
-                    <a class="filter-tab @(Model.StatusFilter == "scheduled" ? "active" : string.Empty)" asp-page="./Index" asp-route-status="scheduled">Scheduled</a>
-                    <a class="filter-tab @(Model.StatusFilter == "expired" ? "active" : string.Empty)" asp-page="./Index" asp-route-status="expired">Expired</a>
-                </nav>
-            </div>
-
-            <div class="table-responsive assignment-table-wrap">
-                <table class="table assignment-table">
-                    <thead>
-                        <tr>
-                            <th scope="col">Delegator</th>
-                            <th scope="col">Proxy</th>
-                            <th scope="col">Window</th>
-                            <th scope="col">Status</th>
-                            <th scope="col">Access</th>
-                            <th scope="col">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    @foreach (var assignment in Model.Assignments)
-                    {
-                        <tr>
-                            <td>
-                                <div class="person-cell">
-                                    <strong>@assignment.DelegatorName</strong>
-                                    <span>@assignment.DelegatorDetail</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="person-cell">
-                                    <strong>@assignment.ProxyName</strong>
-                                    <span>@assignment.ProxyDetail</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="window-cell">
-                                    <strong>@assignment.WindowLabel</strong>
-                                    <span>@assignment.DurationLabel</span>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="status-pill status-@assignment.StatusClass">@assignment.Status</span>
-                            </td>
-                            <td>
-                                <span class="approval-pill @(assignment.HasAllToolAccess || assignment.CanApproveLeave ? "approval-enabled" : "approval-limited")">
-                                    @assignment.AccessLabel
-                                </span>
-                            </td>
-                            <td>
-                                @if (assignment.CanRemove)
-                                {
-                                    <form method="post" asp-page-handler="Remove" class="assignment-action-form">
-                                        <input type="hidden" name="Status" value="@Model.StatusFilter" />
-                                        <input type="hidden" name="Remove.AssignmentId" value="@assignment.AssignmentId" />
-                                        <button class="btn btn-outline-danger btn-sm" type="submit">Remove</button>
-                                    </form>
-                                }
-                                else
-                                {
-                                    <span class="table-action-muted">Restricted</span>
-                                }
-                            </td>
-                        </tr>
-                    }
-                    </tbody>
-                </table>
-
-                @if (Model.Assignments.Count == 0)
-                {
-                    <div class="empty-state">@(Model.CurrentView.IsProxying ? "No related assignments match this status." : "No assignments match this status.")</div>
-                }
-            </div>
-        </section>
-    </div>
+            </article>
+            <article class="sf-update-card">
+                <div class="sf-update-image image-workplace"></div>
+                <div class="sf-update-body">
+                    <h3>Know your Workplace</h3>
+                    <p>1218 Global HR solutions.</p>
+                </div>
+            </article>
+        </div>
+    </section>
 </div>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}

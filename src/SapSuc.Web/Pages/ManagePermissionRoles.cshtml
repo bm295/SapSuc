@@ -1,0 +1,79 @@
+@page "/ManagePermissionRoles"
+@{
+    ViewData["Title"] = "Manage Permission Roles";
+
+    var roles = new[]
+    {
+        new { Id = 81, Name = "Administrators", UserType = "Employee", Description = "This role grants nearly all available permissions to system administrators. Some unused permissions are omitted.", Status = "Active", RbpOnly = true, LastModified = "Apr 10, 2025" },
+        new { Id = 622, Name = "All Employees", UserType = "Employee", Description = "This role grants the appropriate user permissions to all Employees. It does not include permissions for Reports that require elevated access.", Status = "Active", RbpOnly = false, LastModified = "Mar 26, 2025" },
+        new { Id = 621, Name = "Managers", UserType = "Employee", Description = "This role grants the appropriate user permissions to all Managers in the organization.", Status = "Active", RbpOnly = true, LastModified = "Mar 26, 2025" },
+        new { Id = 758, Name = "TIH - Team View", UserType = "Employee", Description = "Access to Team View in Growth Portfolio for all managers in the organization.", Status = "Active", RbpOnly = true, LastModified = "Mar 25, 2025" },
+        new { Id = 720, Name = "Succession Planners", UserType = "Employee", Description = "Succession planning role for designated planning users.", Status = "Active", RbpOnly = false, LastModified = "Jan 2, 2025" },
+        new { Id = 623, Name = "Employee Search", UserType = "Employee", Description = "This role allows all Employees to search for all employees by granting the role to Everyone and also setting the target population.", Status = "Active", RbpOnly = true, LastModified = "Jun 23, 2023" },
+        new { Id = 221, Name = "Homepage3 Tile View", UserType = "Employee", Description = "Homepage3 Tile View permissions.", Status = "Active", RbpOnly = false, LastModified = "Jan 24, 2019" },
+        new { Id = 121, Name = "Default Pixel Perfect Templates Role", UserType = "Employee", Description = "Created by system automatically.", Status = "Active", RbpOnly = false, LastModified = "May 13, 2016" }
+    };
+}
+
+<div class="mpr-page">
+    <nav class="mpr-breadcrumb" aria-label="Breadcrumb">
+        <a href="/">Admin Center</a> <span>/</span> <span>Manage Permission Roles</span>
+    </nav>
+
+    <header class="mpr-header">
+        <h1>Manage Permission Roles</h1>
+        <p>Different users should have different access to the information in the application. A role controls the access rights of its users to the application or employee data. Each role has its own access permissions that you define. You can also limit what a group can access.</p>
+    </header>
+
+    <section class="mpr-card" aria-label="Roles table">
+        <div class="mpr-toolbar">
+            <h2>Roles</h2>
+            <div class="mpr-tools">
+                <input type="search" placeholder="Search for a role" aria-label="Search for a role" />
+                <button type="button" class="mpr-create">Create</button>
+                <button type="button" class="mpr-icon" aria-label="Sort">?</button>
+                <button type="button" class="mpr-icon" aria-label="Filter">?</button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-sm mpr-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>User Type</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>RBP-Only</th>
+                        <th>Last Modified</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var role in roles)
+                    {
+                        var editUrl = role.Name == "Administrators" ? "/ManagePermissionRoles/EditAdministrators" : "#";
+
+                        <tr>
+                            <td>@role.Id</td>
+                            <td><a href="@editUrl">@role.Name</a></td>
+                            <td>@role.UserType</td>
+                            <td>@role.Description</td>
+                            <td class="mpr-status">@role.Status</td>
+                            <td>@(role.RbpOnly ? "?" : string.Empty)</td>
+                            <td>@role.LastModified</td>
+                            <td class="mpr-actions">
+                                <a href="#">Add Role Assignments</a>
+                                <a href="@editUrl">Edit</a>
+                                <a href="#">Copy</a>
+                                <a href="#">Delete</a>
+                                <a href="#">View History</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>

@@ -1,0 +1,107 @@
+@page "/CompanySettings"
+@model SapSuc.Web.Pages.CompanySettingsModel
+@{
+    ViewData["Title"] = "Company Settings";
+}
+
+<div class="cs-page">
+    <nav class="cs-breadcrumb" aria-label="Breadcrumb">
+        <a href="/AdminCenter">Admin Center</a> <span>/</span> <span>Company Settings</span>
+    </nav>
+
+    <header class="cs-header">
+        <h1>Company Settings</h1>
+        <p>Review company-level options and change them by checking or unchecking the corresponding setting.</p>
+    </header>
+
+    @if (TempData["SuccessMessage"] is string successMessage)
+    {
+        <div class="alert alert-success cs-alert" role="status">@successMessage</div>
+    }
+
+    <form method="post" class="cs-settings-form">
+        <section class="cs-card" aria-label="Company settings">
+            <div class="cs-toolbar">
+                <h2>Settings</h2>
+                <div class="cs-toolbar-actions">
+                    <a href="/AdminCenter">Cancel</a>
+                    <button class="btn btn-sm btn-primary" type="submit">Save</button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-sm cs-table">
+                    <thead>
+                        <tr>
+                            <th class="cs-enabled-col">Enabled</th>
+                            <th>Setting</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <input asp-for="Settings.AllowManagerAccessToDocumentRevisionHistory"
+                                       class="form-check-input"
+                                       aria-label="Allow Manager Access to a Document's Revision History" />
+                            </td>
+                            <td>
+                                <label asp-for="Settings.AllowManagerAccessToDocumentRevisionHistory" class="cs-setting-label"></label>
+                            </td>
+                            <td>
+                                As forms are modified and moved through the workflow in SAP SuccessFactors, an audit trail is created.
+                                With this option selected, only the manager can view the full history of changes on the form, and employees
+                                are only able to see the history of their own changes.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <input asp-for="Settings.GeneralDisplayNameEnabledByDefaultForNewCustomers"
+                                       class="form-check-input"
+                                       aria-label="General Display Name Enabled by Default for New Customers" />
+                            </td>
+                            <td>
+                                <label asp-for="Settings.GeneralDisplayNameEnabledByDefaultForNewCustomers" class="cs-setting-label"></label>
+                            </td>
+                            <td>
+                                If that option is enabled and you've configured the Name Format for General Display field in Legal Entity
+                                and enabled the Enable the name format selected in Configure People Profile to apply globally, you can now
+                                see the name format that you've configured on UI pages of features that have adopted general display name in
+                                Learning as well.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                @if (Model.CaseInsensitiveUsernamesLocked)
+                                {
+                                    <input type="hidden" name="Settings.EnableCaseInsensitiveUsernames" value="true" />
+                                    <input type="checkbox"
+                                           id="Settings_EnableCaseInsensitiveUsernames"
+                                           class="form-check-input"
+                                           checked
+                                           disabled
+                                           aria-label="Enable Case-Insensitive Usernames" />
+                                }
+                                else
+                                {
+                                    <input asp-for="Settings.EnableCaseInsensitiveUsernames"
+                                           class="form-check-input"
+                                           aria-label="Enable Case-Insensitive Usernames" />
+                                }
+                            </td>
+                            <td>
+                                <label asp-for="Settings.EnableCaseInsensitiveUsernames" class="cs-setting-label"></label>
+                            </td>
+                            <td>
+                                With this setting it is possible to manage the case sensitivity of usernames in your company system. You can
+                                also ensure a smoother integration with SAP Identity Authentication Service (IAS) or other third parties that
+                                don't use case-sensitive usernames. After you enable case-insensitive usernames, this option is greyed out and
+                                can no longer be disabled.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </form>
+</div>

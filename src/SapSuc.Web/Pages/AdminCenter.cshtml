@@ -1,0 +1,59 @@
+@page "/AdminCenter"
+@{
+    ViewData["Title"] = "Admin Center";
+}
+
+<div class="ac-page">
+    <div class="ac-title-row">Admin Center</div>
+
+    <div class="ac-grid">
+        <section class="ac-card ac-dsi">
+            <header><h2>Data Subject Information</h2><a href="#">?</a></header>
+            <ul>
+                <li><span>READY TO DOWNLOAD</span><strong class="ok">0</strong></li>
+                <li><span>PROCESSING</span><strong class="warn">0</strong></li>
+                <li><span>FAILED</span><strong class="bad">0</strong></li>
+            </ul>
+            <a class="ac-footer-link" href="#">New Search</a>
+        </section>
+
+        <section class="ac-card ac-release">
+            <header><h2>Release Center</h2><a href="#">See More</a></header>
+            <div class="ac-release-body">
+                <span class="tag">Important</span>
+                <span>1H 2020 Production Release</span>
+                <div class="ac-release-image"></div>
+                <div class="ac-dots">? ? ? ? ? ?</div>
+            </div>
+        </section>
+
+        <section class="ac-card ac-isc">
+            <header><h2>Intelligent Services Center (ISC)</h2><a href="#">See More</a></header>
+            <div class="ac-empty">No Event Raised<br /><small>Past 7 days</small></div>
+        </section>
+
+        <section class="ac-card ac-jobs">
+            <header><h2>Scheduled Jobs</h2><a href="#">See More</a></header>
+            <div class="ac-chart"></div>
+        </section>
+
+        <section class="ac-card ac-health">
+            <header><h2>Latest Check Tool Results for System Health</h2><a href="#">See More</a></header>
+            <div class="ac-pie"></div>
+        </section>
+
+        <section class="ac-card ac-tools">
+            <header><h2>Tools</h2><a href="#">See All</a></header>
+            <input type="search" placeholder="Search Tools" />
+            <div class="ac-tabs"><span class="active">FAVORITE</span><span>RECENT</span></div>
+            <ul class="ac-tool-list">
+                <li><a href="#">Reset User Passwords</a></li>
+                <li><a href="#">Manage Organization, Pay and Job Structures</a></li>
+                <li><a href="/CompanySettings">Company Settings</a></li>
+                <li><a href="#">Configure Business Rules</a></li>
+                <li><a href="#">Configure Object Definitions</a></li>
+                <li><a href="/ManagePermissionRoles">Manage Permission Roles</a></li>
+            </ul>
+        </section>
+    </div>
+</div>

@@ -1,0 +1,169 @@
+@page "/ProxyManagement"
+@model IndexModel
+@{
+    ViewData["Title"] = "Proxy Management";
+}
+
+<div class="pm-page">
+    <header class="pm-header">
+        <h1>Admin Center</h1>
+        <p><a href="/">Back to Admin Center</a></p>
+        <h2>Proxy Management</h2>
+        <p class="pm-intro">Use this page to make new proxy assignments, look up existing proxy relationships or change the proxy settings for the company.</p>
+    </header>
+
+    @if (TempData["SuccessMessage"] is string successMessage)
+    {
+        <div class="alert alert-success" role="status">@successMessage</div>
+    }
+
+    @if (TempData["WarningMessage"] is string warningMessage)
+    {
+        <div class="alert alert-warning" role="status">@warningMessage</div>
+    }
+
+    <section class="pm-section">
+        <h3>Make Assignments</h3>
+        <form method="post" asp-page="/Index" asp-page-handler="Assign" class="pm-form">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="pm-row">
+                <label>Who will act as the proxy(username):</label>
+                <div class="pm-inline-fields">
+                    @for (var i = 0; i < Model.ProxySlotCount; i++)
+                    {
+                        var selectedProxyId = Model.Input.ProxyEmployeeIds.Count > i ? Model.Input.ProxyEmployeeIds[i] : Guid.Empty;
+                        <select id="Input_ProxyEmployeeIds_@i" name="Input.ProxyEmployeeIds[@i]" class="form-select form-select-sm">
+                            <option value="@Guid.Empty">None</option>
+                            @foreach (var employeeOption in Model.EmployeeOptions)
+                            {
+                                var employeeId = Guid.Parse(employeeOption.Value!);
+                                if (employeeId == selectedProxyId)
+                                {
+                                    <option value="@employeeOption.Value" selected>@employeeOption.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@employeeOption.Value">@employeeOption.Text</option>
+                                }
+                            }
+                        </select>
+                    }
+                </div>
+            </div>
+
+            <div class="pm-row">
+                <label asp-for="Input.DelegatorEmployeeId">What account holder will the proxy act on behalf of (username):</label>
+                <select asp-for="Input.DelegatorEmployeeId" asp-items="Model.EmployeeOptions" class="form-select form-select-sm"></select>
+            </div>
+
+            <div class="pm-rights">
+                <p class="pm-strong">Grant Proxy Rights:</p>
+                <p class="pm-strong">Grant rights to the following modules/tabs:</p>
+                <div class="pm-checkbox-grid">
+                    <label><input type="checkbox" /> All Modules</label>
+                    <label><input type="checkbox" /> Reporting</label>
+                    <label><input type="checkbox" /> Performance Manager Forms</label>
+                    <label><input type="checkbox" /> Admin Tools</label>
+                    <label><input type="checkbox" /> Directory</label>
+                    <label><input type="checkbox" /> Total Goal Management</label>
+                    <label><input type="checkbox" /> Succession Management</label>
+                    <label><input type="checkbox" /> Talent Search (standalone)</label>
+                    <label><input type="checkbox" /> Goals Tab</label>
+                    <label><input type="checkbox" /> Organization chart</label>
+                    <label><input type="checkbox" /> 360</label>
+                    <label><input type="checkbox" /> Calibration</label>
+                    <label><input type="checkbox" /> Presentations</label>
+                    <label><input type="checkbox" /> BPE Task Execution</label>
+                    <label><input type="checkbox" /> Continuous Performance Management</label>
+                    <label><input type="checkbox" /> Continuous Feedback</label>
+                    <label><input type="checkbox" /> Dynamic Teams</label>
+                    <label><input type="checkbox" /> Growth Portfolio</label>
+                    <label><input type="checkbox" /> Performance Tab</label>
+                    <label><input type="checkbox" /> Home Page Tab</label>
+                </div>
+            </div>
+
+            <div class="pm-dates">
+                <div>
+                    <label asp-for="Input.StartDate">Start:</label>
+                    <input asp-for="Input.StartDate" type="date" class="form-control form-control-sm" />
+                </div>
+                <div>
+                    <label asp-for="Input.EndDate">End:</label>
+                    <input asp-for="Input.EndDate" type="date" class="form-control form-control-sm" />
+                </div>
+                <label class="pm-leave"><input asp-for="Input.CanApproveLeave" /> Grant leave approval rights</label>
+            </div>
+
+            <div class="pm-actions">
+                <button class="btn btn-sm btn-secondary" type="submit">Save</button>
+                <span>Saving will grant proxy access as per above criteria selection.</span>
+            </div>
+        </form>
+    </section>
+
+    <section class="pm-section">
+        <h3>Look Up Existing Assignments</h3>
+        <div class="pm-lookup">
+            <form method="get" asp-page="/ProxyManagement" class="pm-inline-form">
+                <label>Find the proxy for an account holder.</label>
+                <div>
+                    <input type="text" class="form-control form-control-sm" placeholder="Account holder (username)" />
+                    <button class="btn btn-sm btn-outline-secondary" type="button">Search for Proxy</button>
+                </div>
+            </form>
+            <form method="get" asp-page="/ProxyManagement" class="pm-inline-form">
+                <label>Find the account holder(s) assigned to this proxy.</label>
+                <div>
+                    <input type="text" class="form-control form-control-sm" placeholder="Proxy (username)" />
+                    <button class="btn btn-sm btn-outline-secondary" type="button">Search for Account Holders</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-responsive pm-table-wrap">
+            <table class="table table-sm pm-table">
+                <thead>
+                <tr>
+                    <th>Account holder</th><th>Proxy</th><th>Window</th><th>Status</th><th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var assignment in Model.Assignments)
+                {
+                    <tr>
+                        <td>@assignment.DelegatorName</td>
+                        <td>@assignment.ProxyName</td>
+                        <td>@assignment.WindowLabel</td>
+                        <td>@assignment.Status</td>
+                        <td>
+                            @if (assignment.CanRemove)
+                            {
+                                <form method="post" asp-page="/Index" asp-page-handler="Remove">
+                                    <input type="hidden" name="Status" value="@Model.StatusFilter" />
+                                    <input type="hidden" name="Remove.AssignmentId" value="@assignment.AssignmentId" />
+                                    <button class="btn btn-sm btn-outline-secondary" type="submit">Delete</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="pm-section">
+        <h3>Change the proxy settings for the company</h3>
+        <form method="post" asp-page="/Index" asp-page-handler="UpdateSettings" class="pm-settings">
+            <label><input type="checkbox" /> Always enable proxy lookup.</label>
+            <label><input asp-for="Settings.AllowEmployeeProxySelfService" /> Enable Advanced Proxy Management (Proxy Now and Proxy Import)</label>
+            <div><button class="btn btn-sm btn-secondary" type="submit">Save Proxy Settings</button></div>
+        </form>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

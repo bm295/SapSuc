@@ -1,0 +1,111 @@
+@page "/ManagePermissionRoles/EditAdministrators"
+@{
+    ViewData["Title"] = "Edit Administrators";
+
+    var categories = new[]
+    {
+        "Manage Competencies and Skills",
+        "Manage System Properties",
+        "Manage User",
+        "Manage Identity Account and Group",
+        "Metadata Framework",
+        "Manage Business Configuration",
+        "Admin Alerts Object Permissions",
+        "Manage Mass Data Management",
+        "Business Rules Object Permissions",
+        "Diagnostic Tool",
+        "Configuration Transport Center",
+        "Manage Integration Tools",
+        "Manage Security",
+        "Common Super Domain",
+        "Admin Center Permissions",
+        "Manage Extensions on SAP BTP",
+        "Manage Security Center",
+        "Card Service"
+    };
+
+    var permissions = new[]
+    {
+        new { Name = "Manage Asserting Parties", Description = string.Empty, Highlight = false },
+        new { Name = "Employee Central Feature Settings", Description = string.Empty, Highlight = false },
+        new { Name = "Platform Feature Settings", Description = string.Empty, Highlight = true },
+        new { Name = "Cross Talent Feature Settings", Description = string.Empty, Highlight = false },
+        new { Name = "Performance Management Feature Settings", Description = string.Empty, Highlight = false },
+        new { Name = "Process Guide Setting", Description = "Allow role to give employees access to your customized Process Guide if you're usin...", Highlight = false },
+        new { Name = "Handout Builder", Description = "Allow role to manage handouts", Highlight = false },
+        new { Name = "Text Replacement", Description = "Allow role to modify some of the words used by default through the suite (e.g. in Go...", Highlight = false },
+        new { Name = "To-Do Admin", Description = "Allow role to manage configurations for the to-do portlet", Highlight = false },
+        new { Name = "Welcome Portlet Admin", Description = "Allow role to manage configurations for the welcome portlet", Highlight = false },
+        new { Name = "Org Chart Configuration", Description = "Access admin tools to configure organization chart settings", Highlight = false },
+        new { Name = "Talent Search Management", Description = string.Empty, Highlight = false },
+        new { Name = "Data Inspector", Description = "A data inspector tool for professional user to check raw data.", Highlight = false },
+        new { Name = "View Provisioning Access", Description = string.Empty, Highlight = false },
+        new { Name = "Control Provisioning Access", Description = string.Empty, Highlight = false },
+        new { Name = "Work Tech Configuration", Description = "Allow role to configure Work Tech settings", Highlight = false },
+        new { Name = "Enable Learning Integration for Talent Intelligence Hub", Description = string.Empty, Highlight = false }
+    };
+}
+
+<div class="er-page">
+    <nav class="er-breadcrumb" aria-label="Breadcrumb">
+        <a href="/AdminCenter">Admin Center</a>
+        <span>/</span>
+        <a href="/ManagePermissionRoles">Manage Permission Roles</a>
+        <span>/</span>
+        <span>Edit Role for Administrators</span>
+    </nav>
+
+    <header class="er-header">
+        <h1>Edit Administrators</h1>
+    </header>
+
+    <ol class="er-stepper" aria-label="Edit role progress">
+        <li>
+            <span>1</span>
+            <strong>Basic Information</strong>
+        </li>
+        <li class="active">
+            <span>2</span>
+            <strong>Add Permissions</strong>
+        </li>
+        <li>
+            <span>3</span>
+            <strong>Preview</strong>
+        </li>
+    </ol>
+
+    <section class="er-permissions-shell" aria-label="Add permissions">
+        <aside class="er-category-pane" aria-label="Permission categories">
+            <ul>
+                @foreach (var category in categories)
+                {
+                    var isSelected = category == "Manage System Properties";
+                    <li class="@(isSelected ? "selected" : string.Empty)">
+                        <button type="button">@category</button>
+                    </li>
+                }
+            </ul>
+            <div class="er-category-scrollbar" aria-hidden="true">
+                <span></span>
+            </div>
+        </aside>
+
+        <div class="er-permission-pane">
+            <div class="er-permission-list" role="list">
+                @foreach (var permission in permissions)
+                {
+                    <label class="er-permission-row @(permission.Highlight ? "highlight" : string.Empty)" role="listitem">
+                        <span class="er-check">
+                            <input type="checkbox" checked />
+                        </span>
+                        <span class="er-permission-name">@permission.Name</span>
+                        <span class="er-permission-description">@permission.Description</span>
+                    </label>
+                }
+            </div>
+            <div class="er-permission-scrollbar" aria-hidden="true">
+                <span></span>
+            </div>
+        </div>
+    </section>
+</div>

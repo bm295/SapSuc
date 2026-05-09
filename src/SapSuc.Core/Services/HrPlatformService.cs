@@ -13,10 +13,27 @@ public sealed class HrPlatformService
     private readonly List<ProxyAssignment> _proxyAssignments = [];
 
     public bool AllowEmployeeProxySelfService { get; private set; }
+    public bool AllowManagerAccessToDocumentRevisionHistory { get; private set; } = true;
+    public bool GeneralDisplayNameEnabledByDefaultForNewCustomers { get; private set; }
+    public bool CaseInsensitiveUsernamesEnabled { get; private set; }
 
     public void UpdateProxySelfService(bool allowEmployeeProxySelfService)
     {
         AllowEmployeeProxySelfService = allowEmployeeProxySelfService;
+    }
+
+    public void UpdateCompanySettings(
+        bool allowManagerAccessToDocumentRevisionHistory,
+        bool generalDisplayNameEnabledByDefaultForNewCustomers,
+        bool enableCaseInsensitiveUsernames)
+    {
+        AllowManagerAccessToDocumentRevisionHistory = allowManagerAccessToDocumentRevisionHistory;
+        GeneralDisplayNameEnabledByDefaultForNewCustomers = generalDisplayNameEnabledByDefaultForNewCustomers;
+
+        if (enableCaseInsensitiveUsernames)
+        {
+            CaseInsensitiveUsernamesEnabled = true;
+        }
     }
 
     public Employee HireEmployee(string employeeNumber, string firstName, string lastName, string department, string title, DateTime hireDate, int yearlyLeaveEntitlement, string? assignmentId = null)

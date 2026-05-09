@@ -1,8 +1,7 @@
 @{
     var currentPath = Context.Request.Path.Value ?? string.Empty;
-    var isProxyPage = currentPath.Equals("/", StringComparison.OrdinalIgnoreCase) ||
+    var isHomePage = currentPath.Equals("/", StringComparison.OrdinalIgnoreCase) ||
         currentPath.Contains("Index", StringComparison.OrdinalIgnoreCase);
-    var isPrivacyPage = currentPath.Contains("Privacy", StringComparison.OrdinalIgnoreCase);
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -15,66 +14,112 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/SapSuc.Web.styles.css" asp-append-version="true" />
 </head>
-<body class="fiori-body">
-    <header class="shellbar" role="banner">
-        <div class="shellbar-left">
-            <a class="shell-logo" asp-area="" asp-page="/Index" aria-label="SapSuc HR home">
-                <span class="shell-logo-mark">SH</span>
-            </a>
-            <div class="shell-title-block">
-                <span class="shell-product">SapSuc HR</span>
-                <span class="shell-subtitle">Proxy Administration</span>
-            </div>
+<body class="sf-body">
+    <header class="sf-topbar" role="banner">
+        <div class="sf-brand">
+            <span class="sf-logo">SAP</span>
+            <span class="sf-product">SuccessFactors</span>
+            @if (isHomePage)
+            {
+                <span class="sf-section">Home</span>
+            }
+            else
+            {
+                <a class="sf-section" href="/AdminCenter">Admin Center</a>
+            }
         </div>
-
-        <div class="shell-search" role="search">
-            <span class="shell-search-icon" aria-hidden="true">S</span>
-            <input type="search" aria-label="Enterprise search" placeholder="Search employees, forms, assignments" />
+        <div class="sf-search" role="search">
+            <input id="global-search" type="search" aria-label="Search" placeholder="Search for actions or people" autocomplete="off" />
+            <div id="global-search-suggestions" class="sf-suggestions" role="listbox" aria-label="Search suggestions" hidden></div>
         </div>
-
-        <div class="shell-actions">
-            <button class="shell-icon-button" type="button" aria-label="Help">?</button>
-            <button class="shell-icon-button" type="button" aria-label="Notifications">!</button>
-            <button class="shell-user-button" type="button" aria-label="User profile">AD</button>
+        <div class="sf-actions" aria-label="Header actions">
+            <button type="button">?</button>
+            <button type="button">!</button>
+            <button type="button">U</button>
         </div>
     </header>
 
-    <div class="app-frame">
-        <aside class="side-nav" aria-label="Primary navigation">
-            <nav>
-                <a class="side-nav-item @(isProxyPage ? "active" : string.Empty)" asp-area="" asp-page="/Index">
-                    <span class="side-nav-icon" aria-hidden="true">PM</span>
-                    <span>Proxy Management</span>
-                </a>
-                <a class="side-nav-item" asp-area="" asp-page="/Index" asp-fragment="assignment-form">
-                    <span class="side-nav-icon" aria-hidden="true">+</span>
-                    <span>New Assignment</span>
-                </a>
-                <a class="side-nav-item" asp-area="" asp-page="/Index" asp-fragment="csv-import">
-                    <span class="side-nav-icon" aria-hidden="true">CSV</span>
-                    <span>CSV Import</span>
-                </a>
-                <a class="side-nav-item @(isPrivacyPage ? "active" : string.Empty)" asp-area="" asp-page="/Privacy">
-                    <span class="side-nav-icon" aria-hidden="true">i</span>
-                    <span>Data Privacy</span>
-                </a>
-            </nav>
-        </aside>
+    <main class="sf-page" role="main">
+        @RenderBody()
+    </main>
 
-        <main class="app-content" role="main">
-            @RenderBody()
-        </main>
-    </div>
+    <script>
+        (function () {
+            const input = document.getElementById('global-search');
+            const box = document.getElementById('global-search-suggestions');
+            if (!input || !box) return;
 
-    <footer class="app-footer">
-        <span>&copy; 2026 SapSuc HR</span>
-        <a asp-area="" asp-page="/Privacy">Data Privacy</a>
-    </footer>
+            const entries = [
+                { label: 'Admin Center', url: '/AdminCenter' },
+                { label: 'Proxy Management', url: '/ProxyManagement' },
+                { label: 'Company Settings', url: '/CompanySettings' },
+                { label: 'Manage Permission Roles', url: '/ManagePermissionRoles' }
+            ];
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+            function isSubsequence(query, text) {
+                let qi = 0;
+                for (let ti = 0; ti < text.length && qi < query.length; ti++) {
+                    if (query[qi] === text[ti]) qi++;
+                }
+                return qi === query.length;
+            }
+
+            function getMatches(query) {
+                const q = query.trim().toLowerCase();
+                if (!q) return [];
+                return entries.filter(e => {
+                    const label = e.label.toLowerCase();
+                    return label.includes(q) || isSubsequence(q, label);
+                });
+            }
+
+            function render(matches) {
+                box.innerHTML = '';
+                if (matches.length === 0) {
+                    box.hidden = true;
+                    return;
+                }
+
+                for (const match of matches) {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'sf-suggestion-item';
+                    btn.textContent = match.label;
+                    btn.setAttribute('role', 'option');
+                    btn.addEventListener('click', function () {
+                        window.location.href = match.url;
+                    });
+                    box.appendChild(btn);
+                }
+
+                box.hidden = false;
+            }
+
+            input.addEventListener('input', function () {
+                render(getMatches(input.value));
+            });
+
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    const matches = getMatches(input.value);
+                    if (matches.length > 0) {
+                        e.preventDefault();
+                        window.location.href = matches[0].url;
+                    }
+                } else if (e.key === 'Escape') {
+                    box.hidden = true;
+                }
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!box.contains(e.target) && e.target !== input) {
+                    box.hidden = true;
+                }
+            });
+        })();
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+
