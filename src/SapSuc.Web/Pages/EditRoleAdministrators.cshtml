@@ -14,6 +14,7 @@
         "Manage Mass Data Management",
         "Business Rules Object Permissions",
         "Diagnostic Tool",
+        "Check Tool",
         "Configuration Transport Center",
         "Manage Integration Tools",
         "Manage Security",
@@ -26,23 +27,9 @@
 
     var permissions = new[]
     {
-        new { Name = "Manage Asserting Parties", Description = string.Empty, Highlight = false },
-        new { Name = "Employee Central Feature Settings", Description = string.Empty, Highlight = false },
-        new { Name = "Platform Feature Settings", Description = string.Empty, Highlight = true },
-        new { Name = "Cross Talent Feature Settings", Description = string.Empty, Highlight = false },
-        new { Name = "Performance Management Feature Settings", Description = string.Empty, Highlight = false },
-        new { Name = "Process Guide Setting", Description = "Allow role to give employees access to your customized Process Guide if you're usin...", Highlight = false },
-        new { Name = "Handout Builder", Description = "Allow role to manage handouts", Highlight = false },
-        new { Name = "Text Replacement", Description = "Allow role to modify some of the words used by default through the suite (e.g. in Go...", Highlight = false },
-        new { Name = "To-Do Admin", Description = "Allow role to manage configurations for the to-do portlet", Highlight = false },
-        new { Name = "Welcome Portlet Admin", Description = "Allow role to manage configurations for the welcome portlet", Highlight = false },
-        new { Name = "Org Chart Configuration", Description = "Access admin tools to configure organization chart settings", Highlight = false },
-        new { Name = "Talent Search Management", Description = string.Empty, Highlight = false },
-        new { Name = "Data Inspector", Description = "A data inspector tool for professional user to check raw data.", Highlight = false },
-        new { Name = "View Provisioning Access", Description = string.Empty, Highlight = false },
-        new { Name = "Control Provisioning Access", Description = string.Empty, Highlight = false },
-        new { Name = "Work Tech Configuration", Description = "Allow role to configure Work Tech settings", Highlight = false },
-        new { Name = "Enable Learning Integration for Talent Intelligence Hub", Description = string.Empty, Highlight = false }
+        new { Name = "Access Check Tool", Description = "Authorizes users to access the Check Tool.", Highlight = true },
+        new { Name = "Allow Configuration Export", Description = "Authorizes users to attach configuration information to a ticket when they need to create one.", Highlight = true },
+        new { Name = "Allow Check Tool Quick Fix", Description = "Authorizes users to fix configuration and data issues from Check Tool results.", Highlight = true }
     };
 }
 
@@ -79,7 +66,7 @@
             <ul>
                 @foreach (var category in categories)
                 {
-                    var isSelected = category == "Manage System Properties";
+                    var isSelected = category == "Check Tool";
                     <li class="@(isSelected ? "selected" : string.Empty)">
                         <button type="button">@category</button>
                     </li>

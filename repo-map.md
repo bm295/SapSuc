@@ -8,9 +8,7 @@ This repository is a small .NET 9 sample HR system inspired by SAP SuccessFactor
 .
 |-- README.md
 |-- SapSuc.sln
-|-- HackerrankCSharp.csproj
 |-- src/
-|   |-- Program.cs
 |   |-- SapSuc.Core/
 |   |-- SapSuc.Web/
 ```
@@ -54,10 +52,6 @@ Important files:
 - `wwwroot/js/site.js` - default site script placeholder.
 - `wwwroot/lib/*` - vendored Bootstrap, jQuery, and validation assets.
 - `appsettings.json`, `appsettings.Development.json` - standard ASP.NET Core configuration files.
-
-### Root Console Sample
-
-The root `HackerrankCSharp.csproj` and `src/Program.cs` form a separate console sample. It demonstrates the core service by creating employees, compensation, goals, leave, proxy assignment, and proxy leave approval. It is not part of `SapSuc.sln`.
 
 ## Main Runtime Flow
 
@@ -141,4 +135,3 @@ The web project currently has no dedicated test project. Running `dotnet test` a
 - Main proxy markup: `src/SapSuc.Web/Pages/Index.cshtml`
 - App styling: `src/SapSuc.Web/wwwroot/css/site.css`
 - Seed data: `src/SapSuc.Web/Program.cs`
-

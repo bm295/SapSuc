@@ -1,0 +1,161 @@
+@page "/CheckTool"
+@{
+    ViewData["Title"] = "Check Tool";
+
+    var groups = new (string Name, (string Title, string Area, string Executed, string Result, string Severity)[] Checks)[]
+    {
+        (
+            "Authentication / Single Sign-On (SSO)",
+            new[]
+            {
+                ("SAP SuccessFactors Basic Authentication is being used. (SuccessFactorsBasicAuthenticationUsed)", "Login Method", "Apr 11, 2025, 4:31:45 AM by v4admin", "1 issue found.", "error")
+            }
+        ),
+        (
+            "Business Rules",
+            new[]
+            {
+                ("All permission roles have consistent authorizations for working with business rules. (PermissionRolesHaveConsistentAuthorizationsForRules)", "Configuration Issue", "Mar 24, 2025, 12:13:25 PM by v4admin", "1 issue found.", "error"),
+                ("All rules assigned in Manage Rule Assignments are properly configured. (ValidateRulesAssignedInManageRuleAssignments)", "Configuration Issue", "Apr 10, 2025, 6:34:53 AM by v4admin", "1 issue found.", "error")
+            }
+        ),
+        (
+            "Center of Capabilities",
+            new[]
+            {
+                ("No competencies have an identical name. (DuplicateCompetencyNameCheck)", "Competency Data Validity", "Mar 25, 2025, 8:28:25 AM by v4admin", "4 issues found.", "error"),
+                ("Proficiency level scale is available. (ProficiencyRatingScaleConfiguredCheck)", "Proficiency Level Scale", "Mar 25, 2025, 8:28:25 AM by v4admin", "1 issue found.", "error")
+            }
+        ),
+        (
+            "Check Tool",
+            new[]
+            {
+                ("All checks are executed. (DetectNotRunCheckEntity)", "Check Result", "Apr 10, 2025, 6:34:51 AM by v4admin", "More than 100 issues found.", "error")
+            }
+        ),
+        (
+            "Development",
+            new[]
+            {
+                ("Job descriptions are consistent on different Career Worksheet UIs. (CWSJobDescriptionCheckExecutor)", "Career Worksheet", "Apr 11, 2025, 4:31:45 AM by v4admin", "1 issue found.", "warning"),
+                ("Custom fields in development objective templates are reportable. (DevelopmentObjectiveTemplateReportableCustomFields)", "Development Plan", "Apr 11, 2025, 4:31:45 AM by v4admin", "2 issues found.", "warning")
+            }
+        ),
+        (
+            "Employee Central Core",
+            new[]
+            {
+                ("Validation for default groups. (MappingGroupItemConsistencyCheck)", "Default Field Configuration", "Aug 10, 2024, 9:33:56 AM by v4admin", "1 issue found.", "error")
+            }
+        )
+    };
+}
+
+<div class="ct-page">
+    <header class="ct-header">
+        <nav class="ct-breadcrumb" aria-label="Breadcrumb">
+            <a href="/AdminCenter">Admin Center</a> <span>/</span>
+        </nav>
+        <div class="ct-title-row">
+            <h1>Check Tool</h1>
+            <div class="ct-page-actions" aria-label="Check Tool actions">
+                <button type="button" class="ct-link-action ct-export-all"><span aria-hidden="true"></span>Export all checks</button>
+                <button type="button" class="ct-link-action ct-export-config"><span aria-hidden="true"></span>Export Configuration</button>
+            </div>
+        </div>
+    </header>
+
+    <nav class="ct-tabs" aria-label="Check tool categories">
+        <button type="button" class="active">System Health</button>
+        <button type="button">Migration</button>
+        <button type="button">Validation</button>
+    </nav>
+
+    <section class="ct-filter-panel" aria-label="Check filters">
+        <div class="ct-filter-grid">
+            <div class="ct-field">
+                <label for="result-type">Result Type:</label>
+                <div id="result-type" class="ct-token-select" role="listbox" aria-label="Result Type">
+                    <span class="ct-token">Error <button type="button" aria-label="Remove Error filter">x</button></span>
+                    <span class="ct-token">Warning <button type="button" aria-label="Remove Warning filter">x</button></span>
+                    <span class="ct-select-chevron" aria-hidden="true">v</span>
+                </div>
+            </div>
+            <div class="ct-field">
+                <label for="application">Application:</label>
+                <select id="application" class="ct-select">
+                    <option></option>
+                    <option>Employee Central</option>
+                    <option>Talent</option>
+                    <option>Platform</option>
+                </select>
+            </div>
+            <div class="ct-field">
+                <label for="area">Area:</label>
+                <select id="area" class="ct-select">
+                    <option></option>
+                    <option>Configuration Issue</option>
+                    <option>Login Method</option>
+                    <option>Check Result</option>
+                </select>
+            </div>
+            <div class="ct-field">
+                <label for="title-filter">Title:</label>
+                <input id="title-filter" type="text" />
+            </div>
+            <button type="button" class="ct-go">Go</button>
+        </div>
+        <button type="button" class="ct-pin" aria-label="Pin filter bar" title="Pin filter bar"></button>
+    </section>
+
+    <section class="ct-checks" aria-label="Checks">
+        <div class="ct-checks-toolbar">
+            <h2>Checks (37)</h2>
+            <div class="ct-toolbar-actions">
+                <button type="button" class="ct-run" disabled>Run 0 Checks</button>
+                <button type="button" class="ct-icon ct-refresh" aria-label="Refresh checks"></button>
+                <button type="button" class="ct-icon ct-table-settings" aria-label="Table settings"></button>
+            </div>
+        </div>
+
+        <div class="ct-table-wrap">
+            <table class="ct-table">
+                <thead>
+                    <tr>
+                        <th class="ct-select-col"><input type="checkbox" aria-label="Select all checks" /></th>
+                        <th>Title</th>
+                        <th>Area</th>
+                        <th>Executed</th>
+                        <th>Result</th>
+                        <th class="ct-row-action-col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var group in groups)
+                    {
+                        <tr class="ct-group-row">
+                            <th colspan="6">@group.Name</th>
+                        </tr>
+
+                        @foreach (var check in group.Checks)
+                        {
+                            <tr class="ct-check-row ct-row-@check.Severity">
+                                <td class="ct-select-col"><input type="checkbox" aria-label="Select @check.Title" /></td>
+                                <td class="ct-title-cell">@check.Title</td>
+                                <td>@check.Area</td>
+                                <td>@check.Executed</td>
+                                <td>
+                                    <span class="ct-result ct-result-@check.Severity">
+                                        <span aria-hidden="true"></span>@check.Result
+                                    </span>
+                                </td>
+                                <td class="ct-row-action-col"><button type="button" aria-label="Open check details">></button></td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>

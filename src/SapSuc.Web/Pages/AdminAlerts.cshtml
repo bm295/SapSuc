@@ -2,83 +2,145 @@
 @{
     ViewData["Title"] = "Admin Alerts";
 
+    var today = DateTime.Today;
+    var dateFormat = "MMM d, yyyy";
     var alerts = new[]
     {
-        new { FirstName = "Rudolf", LastName = "Meier", Date = "Jun 3, 2023", Code = "CC_WeeklyOvertime>10", GroupName = "CC_WeeklyOvertime>10", Value = "60", Message = "Not more than 10 hours overtime per week", PeriodStart = "", PeriodEnd = "" },
-        new { FirstName = "Rudolf", LastName = "Meier", Date = "Jun 1, 2023", Code = "MONTHLY_ALERT", GroupName = "Monthly Alert Max OT", Value = "330", Message = "You should not record more than 6 hrs overtime per month!", PeriodStart = "Jun 1, 2023", PeriodEnd = "Jun 30, 2023" },
-        new { FirstName = "Rudolf", LastName = "Meier", Date = "May 30, 2023", Code = "MONTHLY_ALERT", GroupName = "Monthly Alert Max OT", Value = "330", Message = "You should not record more than 6 hrs overtime per month!", PeriodStart = "May 1, 2023", PeriodEnd = "May 31, 2023" },
-        new { FirstName = "Rudolf", LastName = "Meier", Date = "Apr 12, 2023", Code = "MONTHLY_ALERT", GroupName = "Monthly Alert Max OT", Value = "105", Message = "You should not record more than 6 hrs overtime per month!", PeriodStart = "Apr 1, 2023", PeriodEnd = "Apr 30, 2023" },
-        new { FirstName = "Rudolf", LastName = "Meier", Date = "Mar 19, 2023", Code = "MONTHLY_ALERT", GroupName = "Monthly Alert Max OT", Value = "510", Message = "You should not record more than 6 hrs overtime per month!", PeriodStart = "Mar 1, 2023", PeriodEnd = "Mar 31, 2023" },
-        new { FirstName = "Rudolf", LastName = "Meier", Date = "Jan 11, 2023", Code = "MONTHLY_ALERT", GroupName = "Monthly Alert Max OT", Value = "420", Message = "You should not record more than 6 hrs overtime per month!", PeriodStart = "Jan 1, 2023", PeriodEnd = "Jan 31, 2023" }
+        new { Id = "WF-2048", Priority = "Critical", PriorityClass = "critical", Category = "Stalled workflow", Status = "Unassigned", Item = "Promotion approval stalled", Details = "Compensation change for Minh Tran is waiting on second-level approval.", Source = "Workflow Engine", Owner = "People Operations", Age = "5d", Due = today.ToString(dateFormat), Impact = "1 employee", Action = "Reassign" },
+        new { Id = "INT-1176", Priority = "High", PriorityClass = "high", Category = "Integration issue", Status = "Assigned", Item = "Identity sync failed", Details = "Nightly IAS user provisioning stopped after a duplicate username conflict.", Source = "Integration Center", Owner = "IT Integration", Age = "3h", Due = today.ToString(dateFormat), Impact = "Login updates", Action = "Retry" },
+        new { Id = "HRD-3092", Priority = "High", PriorityClass = "high", Category = "HR data issue", Status = "Unassigned", Item = "Missing manager relationship", Details = "Active employee records were imported without a manager assignment.", Source = "Employee Central", Owner = "HRIS Admin", Age = "2d", Due = today.AddDays(1).ToString(dateFormat), Impact = "12 employees", Action = "Fix data" },
+        new { Id = "WF-2091", Priority = "Medium", PriorityClass = "medium", Category = "Stalled workflow", Status = "Assigned", Item = "Onboarding packet waiting", Details = "New hire forms are past the expected completion window.", Source = "Onboarding", Owner = "Hiring Operations", Age = "4d", Due = today.AddDays(2).ToString(dateFormat), Impact = "1 new hire", Action = "Nudge" },
+        new { Id = "INT-1190", Priority = "Medium", PriorityClass = "medium", Category = "Integration issue", Status = "Unassigned", Item = "Payroll export validation warnings", Details = "Recurring payroll outbound file contains cost-center mapping warnings.", Source = "Payroll Connector", Owner = "Payroll Operations", Age = "1d", Due = today.ToString(dateFormat), Impact = "9 records", Action = "Review" },
+        new { Id = "HRD-3108", Priority = "Medium", PriorityClass = "medium", Category = "HR data issue", Status = "Assigned", Item = "Work authorization expiring", Details = "Employee work authorization documents expire within the configured action window.", Source = "Compliance Center", Owner = "Global Mobility", Age = "10d", Due = today.AddDays(3).ToString(dateFormat), Impact = "3 employees", Action = "Request" },
+        new { Id = "HRD-3120", Priority = "Low", PriorityClass = "low", Category = "HR data issue", Status = "Unassigned", Item = "Duplicate national ID values", Details = "Data quality scan found matching national ID values on separate profiles.", Source = "Data Quality Monitor", Owner = "HRIS Admin", Age = "6d", Due = today.AddDays(4).ToString(dateFormat), Impact = "2 profiles", Action = "Merge" }
     };
+
+    var criticalCount = alerts.Count(alert => alert.Priority == "Critical");
+    var highCount = alerts.Count(alert => alert.Priority == "High");
+    var workflowCount = alerts.Count(alert => alert.Category == "Stalled workflow");
+    var integrationCount = alerts.Count(alert => alert.Category == "Integration issue");
+    var hrDataCount = alerts.Count(alert => alert.Category == "HR data issue");
+    var mdfAlertType = "MDF Data Volume &#8211; Picklist Values (0)";
 }
 
-<div class="aa-page">
+<div class="aa-page aa-action-page">
     <header class="aa-header">
         <div>
             <nav class="aa-breadcrumb" aria-label="Breadcrumb">
                 <a href="/AdminCenter">Admin Center</a> <span>/</span>
             </nav>
             <h1>Admin Alerts</h1>
+            <p class="aa-subtitle">Pending action items across workflows, integrations, and employee data quality.</p>
         </div>
 
         <nav class="aa-header-links" aria-label="Admin alert actions">
-            <a href="#">Subscribe to Emails</a>
-            <a href="#">Information</a>
+            <button type="button" id="aa-subscribe-action" class="aa-link-button">Subscribe to Emails</button>
+            <button type="button" id="aa-info-action" class="aa-link-button">Information</button>
             <a href="#">Configure Alert Type</a>
         </nav>
     </header>
 
     <section class="aa-filter-panel" aria-label="Admin alert filters">
-        <div class="aa-filter-row">
-            <label for="alert-type">Admin Alert Type</label>
-            <select id="alert-type" class="aa-select">
-                <option>Time Valuation (797)</option>
-            </select>
-            <label class="aa-checkbox">
+        <div class="aa-action-filter-row">
+            <div class="aa-filter-field">
+                <label for="alert-type">Admin Alert Type</label>
+                <select id="alert-type" class="aa-select">
+                    <option>All pending action items (@alerts.Length)</option>
+                    <option value="mdf-picklist">@Html.Raw(mdfAlertType)</option>
+                    <option>Critical and high priority (@(criticalCount + highCount))</option>
+                    <option>Assigned to me (0)</option>
+                </select>
+            </div>
+            <div class="aa-filter-field">
+                <label for="alert-category">Category</label>
+                <select id="alert-category" class="aa-select">
+                    <option>All categories</option>
+                    <option>Stalled workflows (@workflowCount)</option>
+                    <option>Integration issues (@integrationCount)</option>
+                    <option>HR data issues (@hrDataCount)</option>
+                </select>
+            </div>
+            <div class="aa-filter-field">
+                <label for="alert-owner">Owner Group</label>
+                <select id="alert-owner" class="aa-select">
+                    <option>All owner groups</option>
+                    <option>People Operations</option>
+                    <option>IT Integration</option>
+                    <option>HRIS Admin</option>
+                    <option>Payroll Operations</option>
+                </select>
+            </div>
+            <label class="aa-checkbox aa-action-checkbox">
                 <input type="checkbox" />
-                <span>Show also inactive Admin Alert Types</span>
+                <span>Show acknowledged alerts</span>
             </label>
+        </div>
+        <div id="aa-alert-type-summary" class="aa-alert-type-summary" role="status">
+            Showing all pending action items.
         </div>
         <button type="button" class="aa-pin" aria-label="Pin filter bar" title="Pin filter bar"><span aria-hidden="true"></span></button>
     </section>
 
-    <section class="aa-tabs" aria-label="Alert status">
-        <button type="button" class="active">Unassigned (797)</button>
-        <button type="button">Assigned to Me (0)</button>
-        <button type="button">Assigned to Others (8)</button>
-        <button type="button">Acknowledged (223)</button>
+    <section class="aa-insight-grid" aria-label="Alert summary">
+        <article class="aa-insight">
+            <span>Total Pending</span>
+            <strong>@alerts.Length</strong>
+            <small>Oldest open item: 10d</small>
+        </article>
+        <article class="aa-insight aa-insight-critical">
+            <span>Critical</span>
+            <strong>@criticalCount</strong>
+            <small>@(criticalCount + highCount) critical or high</small>
+        </article>
+        <article class="aa-insight">
+            <span>Workflow Stalls</span>
+            <strong>@workflowCount</strong>
+            <small>Approval and onboarding queues</small>
+        </article>
+        <article class="aa-insight">
+            <span>Data and Integration</span>
+            <strong>@(integrationCount + hrDataCount)</strong>
+            <small>@integrationCount integrations, @hrDataCount HR data</small>
+        </article>
     </section>
 
-    <section class="aa-table-card" aria-label="Alerts table">
+    <section class="aa-tabs" aria-label="Alert status">
+        <button type="button" class="active">All Pending (@alerts.Length)</button>
+        <button type="button">Workflows (@workflowCount)</button>
+        <button type="button">Integrations (@integrationCount)</button>
+        <button type="button">HR Data (@hrDataCount)</button>
+        <button type="button">Acknowledged (0)</button>
+    </section>
+
+    <section class="aa-table-card" aria-label="Pending action items">
         <div class="aa-table-toolbar">
-            <h2>Alerts (0 selected)</h2>
+            <h2>Action Items (0 selected)</h2>
             <div class="aa-toolbar-actions">
                 <button type="button" class="aa-text-action" disabled>Acknowledge</button>
                 <button type="button" class="aa-text-action">Assign <span aria-hidden="true">v</span></button>
                 <button type="button" class="aa-refresh" aria-label="Refresh alerts"><span aria-hidden="true"></span>Refresh</button>
                 <button type="button" class="aa-icon-action aa-settings" aria-label="Settings" title="Settings (Ctrl+,)"><span aria-hidden="true">&#9881;</span></button>
-                <button type="button" class="aa-icon-action aa-export" aria-label="Export alerts"><span aria-hidden="true"></span></button>
+                <button type="button" class="aa-icon-action aa-export" aria-label="Export alerts" title="Export alerts"><span aria-hidden="true"></span></button>
                 <button type="button" class="aa-icon-action compact" aria-label="More actions">v</button>
             </div>
         </div>
 
-        <div class="aa-filter-strip">1 table filter active: Person ID</div>
+        <div class="aa-filter-strip">3 categories active: stalled workflows, integration issues, HR data issues</div>
 
         <div class="aa-table-wrap">
-            <table class="aa-table">
+            <table class="aa-table aa-action-table">
                 <thead>
                     <tr>
                         <th class="aa-select-col"><input type="checkbox" aria-label="Select all alerts" /></th>
-                        <th>User First Name</th>
-                        <th>User Last Name</th>
-                        <th class="aa-date-col">Date <span aria-hidden="true">|=</span></th>
-                        <th>Time Type Group Code</th>
-                        <th>Time Type Group Name</th>
-                        <th class="aa-value-col">Value</th>
-                        <th>Message</th>
-                        <th>Period Start Date</th>
-                        <th>Period End Date</th>
+                        <th>Priority</th>
+                        <th>Category</th>
+                        <th>Action Item</th>
+                        <th>Source</th>
+                        <th>Owner Group</th>
+                        <th>Age</th>
+                        <th>Due</th>
+                        <th>Impact</th>
+                        <th>Status</th>
                         <th class="aa-row-action-col"></th>
                     </tr>
                 </thead>
@@ -86,21 +148,178 @@
                     @foreach (var alert in alerts)
                     {
                         <tr>
-                            <td class="aa-select-col"><input type="checkbox" aria-label="Select alert for @alert.FirstName @alert.LastName on @alert.Date" /></td>
-                            <td>@alert.FirstName</td>
-                            <td>@alert.LastName</td>
-                            <td>@alert.Date</td>
-                            <td>@alert.Code</td>
-                            <td>@alert.GroupName</td>
-                            <td>@alert.Value</td>
-                            <td>@alert.Message</td>
-                            <td>@alert.PeriodStart</td>
-                            <td>@alert.PeriodEnd</td>
-                            <td class="aa-row-action-col"><button type="button" aria-label="Open alert details">></button></td>
+                            <td class="aa-select-col"><input type="checkbox" aria-label="Select alert @alert.Id" /></td>
+                            <td><span class="aa-priority aa-priority-@alert.PriorityClass">@alert.Priority</span></td>
+                            <td>@alert.Category</td>
+                            <td>
+                                <span class="aa-alert-title">@alert.Item</span>
+                                <span class="aa-alert-detail">@alert.Details</span>
+                            </td>
+                            <td>@alert.Source</td>
+                            <td>@alert.Owner</td>
+                            <td>@alert.Age</td>
+                            <td>@alert.Due</td>
+                            <td>@alert.Impact</td>
+                            <td>@alert.Status</td>
+                            <td class="aa-row-action-col"><button type="button" aria-label="@alert.Action for @alert.Id">></button></td>
                         </tr>
                     }
                 </tbody>
             </table>
+            <div id="aa-empty-state" class="aa-empty-state" hidden>
+                <strong>No alerts</strong>
+                <span>@Html.Raw(mdfAlertType) has no pending action items.</span>
+            </div>
         </div>
     </section>
+
+    <div id="aa-subscribe-dialog" class="aa-dialog" role="dialog" aria-modal="true" aria-labelledby="aa-subscribe-title" hidden>
+        <div class="aa-dialog-panel">
+            <header class="aa-dialog-header">
+                <h2 id="aa-subscribe-title">Subscribe to Emails</h2>
+                <button type="button" class="aa-dialog-close" data-aa-close aria-label="Close subscribe dialog">x</button>
+            </header>
+            <div class="aa-dialog-body">
+                <div class="aa-dialog-field">
+                    <span>Admin Alert Type</span>
+                    <strong>@Html.Raw(mdfAlertType)</strong>
+                </div>
+                <div class="aa-dialog-field">
+                    <label for="aa-email-frequency">Set All To...</label>
+                    <select id="aa-email-frequency" class="aa-select">
+                        <option value="">Set All To...</option>
+                        <option value="Immediately">Immediately</option>
+                        <option value="Daily">Daily</option>
+                        <option value="Weekly">Weekly</option>
+                        <option value="Never">Never</option>
+                    </select>
+                </div>
+                <div id="aa-subscribe-result" class="aa-dialog-result" role="status" hidden></div>
+            </div>
+            <footer class="aa-dialog-footer">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-aa-close>Cancel</button>
+                <button type="button" id="aa-subscribe-ok" class="btn btn-sm btn-primary">OK</button>
+            </footer>
+        </div>
+    </div>
+
+    <div id="aa-info-dialog" class="aa-dialog" role="dialog" aria-modal="true" aria-labelledby="aa-info-title" hidden>
+        <div class="aa-dialog-panel">
+            <header class="aa-dialog-header">
+                <h2 id="aa-info-title">Information</h2>
+                <button type="button" class="aa-dialog-close" data-aa-close aria-label="Close information dialog">x</button>
+            </header>
+            <div class="aa-dialog-body">
+                <div class="aa-dialog-field">
+                    <span>Admin Alert Type</span>
+                    <strong>@Html.Raw(mdfAlertType)</strong>
+                </div>
+                <div class="aa-dialog-field">
+                    <span>Description</span>
+                    <p>
+                        This alert checks whether MDF picklist values are approaching configured data volume thresholds.
+                        Administrators can subscribe to email notifications and review volume warnings before data growth
+                        affects maintenance or integration activity.
+                    </p>
+                </div>
+            </div>
+            <footer class="aa-dialog-footer">
+                <button type="button" class="btn btn-sm btn-primary" data-aa-close>Close</button>
+            </footer>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const alertType = document.getElementById('alert-type');
+            const summary = document.getElementById('aa-alert-type-summary');
+            const table = document.querySelector('.aa-action-table');
+            const emptyState = document.getElementById('aa-empty-state');
+            const subscribeAction = document.getElementById('aa-subscribe-action');
+            const infoAction = document.getElementById('aa-info-action');
+            const subscribeDialog = document.getElementById('aa-subscribe-dialog');
+            const infoDialog = document.getElementById('aa-info-dialog');
+            const frequency = document.getElementById('aa-email-frequency');
+            const subscribeOk = document.getElementById('aa-subscribe-ok');
+            const subscribeResult = document.getElementById('aa-subscribe-result');
+
+            function isMdfSelected() {
+                return alertType && alertType.value === 'mdf-picklist';
+            }
+
+            function updateAlertTypeView() {
+                if (!alertType || !summary || !table || !emptyState) return;
+
+                if (isMdfSelected()) {
+                    summary.textContent = 'Selected Admin Alert Type: MDF Data Volume - Picklist Values (0).';
+                    table.hidden = true;
+                    emptyState.hidden = false;
+                } else {
+                    summary.textContent = 'Showing all pending action items.';
+                    table.hidden = false;
+                    emptyState.hidden = true;
+                }
+            }
+
+            function openDialog(dialog) {
+                if (!dialog) return;
+                dialog.hidden = false;
+                const firstControl = dialog.querySelector('select, button');
+                if (firstControl) firstControl.focus();
+            }
+
+            function closeDialogs() {
+                if (subscribeDialog) subscribeDialog.hidden = true;
+                if (infoDialog) infoDialog.hidden = true;
+            }
+
+            if (alertType) {
+                alertType.addEventListener('change', updateAlertTypeView);
+                updateAlertTypeView();
+            }
+
+            if (subscribeAction) {
+                subscribeAction.addEventListener('click', function () {
+                    if (alertType) alertType.value = 'mdf-picklist';
+                    updateAlertTypeView();
+                    if (frequency) frequency.value = '';
+                    if (subscribeResult) subscribeResult.hidden = true;
+                    openDialog(subscribeDialog);
+                });
+            }
+
+            if (infoAction) {
+                infoAction.addEventListener('click', function () {
+                    if (alertType) alertType.value = 'mdf-picklist';
+                    updateAlertTypeView();
+                    openDialog(infoDialog);
+                });
+            }
+
+            if (subscribeOk) {
+                subscribeOk.addEventListener('click', function () {
+                    if (!frequency || !subscribeResult) return;
+                    const value = frequency.value || 'Daily';
+                    frequency.value = value;
+                    subscribeResult.textContent = 'Email subscription frequency set to ' + value + '.';
+                    subscribeResult.hidden = false;
+                    window.setTimeout(closeDialogs, 450);
+                });
+            }
+
+            document.addEventListener('click', function (event) {
+                if (event.target.matches('[data-aa-close]')) {
+                    closeDialogs();
+                }
+            });
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape') {
+                    closeDialogs();
+                }
+            });
+        })();
+    </script>
+}
