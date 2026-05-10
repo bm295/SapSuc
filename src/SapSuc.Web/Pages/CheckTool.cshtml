@@ -1,161 +1,1032 @@
 @page "/CheckTool"
 @{
     ViewData["Title"] = "Check Tool";
-
-    var groups = new (string Name, (string Title, string Area, string Executed, string Result, string Severity)[] Checks)[]
-    {
-        (
-            "Authentication / Single Sign-On (SSO)",
-            new[]
-            {
-                ("SAP SuccessFactors Basic Authentication is being used. (SuccessFactorsBasicAuthenticationUsed)", "Login Method", "Apr 11, 2025, 4:31:45 AM by v4admin", "1 issue found.", "error")
-            }
-        ),
-        (
-            "Business Rules",
-            new[]
-            {
-                ("All permission roles have consistent authorizations for working with business rules. (PermissionRolesHaveConsistentAuthorizationsForRules)", "Configuration Issue", "Mar 24, 2025, 12:13:25 PM by v4admin", "1 issue found.", "error"),
-                ("All rules assigned in Manage Rule Assignments are properly configured. (ValidateRulesAssignedInManageRuleAssignments)", "Configuration Issue", "Apr 10, 2025, 6:34:53 AM by v4admin", "1 issue found.", "error")
-            }
-        ),
-        (
-            "Center of Capabilities",
-            new[]
-            {
-                ("No competencies have an identical name. (DuplicateCompetencyNameCheck)", "Competency Data Validity", "Mar 25, 2025, 8:28:25 AM by v4admin", "4 issues found.", "error"),
-                ("Proficiency level scale is available. (ProficiencyRatingScaleConfiguredCheck)", "Proficiency Level Scale", "Mar 25, 2025, 8:28:25 AM by v4admin", "1 issue found.", "error")
-            }
-        ),
-        (
-            "Check Tool",
-            new[]
-            {
-                ("All checks are executed. (DetectNotRunCheckEntity)", "Check Result", "Apr 10, 2025, 6:34:51 AM by v4admin", "More than 100 issues found.", "error")
-            }
-        ),
-        (
-            "Development",
-            new[]
-            {
-                ("Job descriptions are consistent on different Career Worksheet UIs. (CWSJobDescriptionCheckExecutor)", "Career Worksheet", "Apr 11, 2025, 4:31:45 AM by v4admin", "1 issue found.", "warning"),
-                ("Custom fields in development objective templates are reportable. (DevelopmentObjectiveTemplateReportableCustomFields)", "Development Plan", "Apr 11, 2025, 4:31:45 AM by v4admin", "2 issues found.", "warning")
-            }
-        ),
-        (
-            "Employee Central Core",
-            new[]
-            {
-                ("Validation for default groups. (MappingGroupItemConsistencyCheck)", "Default Field Configuration", "Aug 10, 2024, 9:33:56 AM by v4admin", "1 issue found.", "error")
-            }
-        )
-    };
 }
 
 <div class="ct-page">
     <header class="ct-header">
         <nav class="ct-breadcrumb" aria-label="Breadcrumb">
-            <a href="/AdminCenter">Admin Center</a> <span>/</span>
+            <a href="/AdminCenter">Back to Admin Center</a>
+            <span>/</span>
         </nav>
-        <div class="ct-title-row">
-            <h1>Check Tool</h1>
-            <div class="ct-page-actions" aria-label="Check Tool actions">
-                <button type="button" class="ct-link-action ct-export-all"><span aria-hidden="true"></span>Export all checks</button>
-                <button type="button" class="ct-link-action ct-export-config"><span aria-hidden="true"></span>Export Configuration</button>
-            </div>
-        </div>
+        <h1>Check Tool</h1>
     </header>
 
-    <nav class="ct-tabs" aria-label="Check tool categories">
-        <button type="button" class="active">System Health</button>
-        <button type="button">Migration</button>
-        <button type="button">Validation</button>
-    </nav>
+    <section class="ct-workspace" aria-label="Check Tool">
+        <nav class="ct-tabs" aria-label="Check Tool Categories">
+            <button type="button" class="is-active" aria-selected="true">System Health</button>
+            <button type="button" aria-selected="false">Migration</button>
+            <button type="button" aria-selected="false">Validation</button>
+        </nav>
 
-    <section class="ct-filter-panel" aria-label="Check filters">
-        <div class="ct-filter-grid">
-            <div class="ct-field">
-                <label for="result-type">Result Type:</label>
-                <div id="result-type" class="ct-token-select" role="listbox" aria-label="Result Type">
-                    <span class="ct-token">Error <button type="button" aria-label="Remove Error filter">x</button></span>
-                    <span class="ct-token">Warning <button type="button" aria-label="Remove Warning filter">x</button></span>
-                    <span class="ct-select-chevron" aria-hidden="true">v</span>
+        <div class="ct-filter-panel">
+            <div class="ct-filter-grid" aria-label="Check filters">
+                <div class="ct-filter-field ct-result-type-field">
+                    <span id="ct-result-type-label">Result Type:</span>
+                    <div class="ct-result-type-picker">
+                        <button id="ct-result-type-button" type="button" class="ct-filter-control ct-result-type-button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="ct-result-type-label">
+                            <span id="ct-result-type-tokens" class="ct-result-type-tokens"></span>
+                            <span class="ct-filter-caret" aria-hidden="true"></span>
+                        </button>
+                        <div id="ct-result-type-options" class="ct-result-type-options" role="listbox" aria-labelledby="ct-result-type-label" hidden>
+                            <label><input type="checkbox" value="error" checked /> Error</label>
+                            <label><input type="checkbox" value="warning" checked /> Warning</label>
+                            <label><input type="checkbox" value="success" checked /> Success</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ct-filter-field">
+                    <label for="application">Application:</label>
+                    <span class="ct-filter-select">
+                        <select id="application" aria-label="Application">
+                            <option selected>Role-Based Permissions</option>
+                            <option>Goals</option>
+                            <option>Development</option>
+                            <option>Employee Central Core</option>
+                            <option>Platform</option>
+                            <option>Talent</option>
+                        </select>
+                    </span>
+                </div>
+
+                <div class="ct-filter-field">
+                    <label for="ct-area-filter">Area:</label>
+                    <span class="ct-filter-select">
+                        <select id="ct-area-filter" aria-label="Area">
+                            <option selected value=""></option>
+                            <option>Dynamic Groups</option>
+                            <option>Permissions</option>
+                            <option>Template Configuration</option>
+                            <option>Career Worksheet</option>
+                            <option>Development Plan</option>
+                        </select>
+                    </span>
+                </div>
+
+                <div class="ct-filter-field">
+                    <label for="ct-title-filter">Title:</label>
+                    <input id="ct-title-filter" class="ct-filter-control" type="text" aria-label="Title" />
+                </div>
+
+                <button id="ct-go" type="button" class="ct-go">Go</button>
+            </div>
+
+            <a class="ct-about" href="#" aria-label="About the Check Tool">
+                <span aria-hidden="true">?</span>
+                About the Check Tool
+            </a>
+        </div>
+
+        <section class="ct-checks" aria-labelledby="available-checks-title">
+            <div class="ct-checks-toolbar">
+                <h2 id="available-checks-title">Available Checks (7)</h2>
+                <div class="ct-toolbar-actions" aria-label="Check table actions">
+                    <button type="button" class="ct-icon ct-refresh" aria-label="Refresh checks" title="Refresh checks"></button>
+                    <button type="button" class="ct-icon ct-download" aria-label="Download checks" title="Download checks"></button>
+                    <button type="button" class="ct-icon ct-collapse" aria-label="Collapse all checks" title="Collapse all checks"></button>
+                    <button type="button" class="ct-icon ct-expand" aria-label="Expand all checks" title="Expand all checks"></button>
                 </div>
             </div>
-            <div class="ct-field">
-                <label for="application">Application:</label>
-                <select id="application" class="ct-select">
-                    <option></option>
-                    <option>Employee Central</option>
-                    <option>Talent</option>
-                    <option>Platform</option>
-                </select>
-            </div>
-            <div class="ct-field">
-                <label for="area">Area:</label>
-                <select id="area" class="ct-select">
-                    <option></option>
-                    <option>Configuration Issue</option>
-                    <option>Login Method</option>
-                    <option>Check Result</option>
-                </select>
-            </div>
-            <div class="ct-field">
-                <label for="title-filter">Title:</label>
-                <input id="title-filter" type="text" />
-            </div>
-            <button type="button" class="ct-go">Go</button>
-        </div>
-        <button type="button" class="ct-pin" aria-label="Pin filter bar" title="Pin filter bar"></button>
-    </section>
 
-    <section class="ct-checks" aria-label="Checks">
-        <div class="ct-checks-toolbar">
-            <h2>Checks (37)</h2>
-            <div class="ct-toolbar-actions">
-                <button type="button" class="ct-run" disabled>Run 0 Checks</button>
-                <button type="button" class="ct-icon ct-refresh" aria-label="Refresh checks"></button>
-                <button type="button" class="ct-icon ct-table-settings" aria-label="Table settings"></button>
-            </div>
-        </div>
-
-        <div class="ct-table-wrap">
-            <table class="ct-table">
-                <thead>
-                    <tr>
-                        <th class="ct-select-col"><input type="checkbox" aria-label="Select all checks" /></th>
-                        <th>Title</th>
-                        <th>Area</th>
-                        <th>Executed</th>
-                        <th>Result</th>
-                        <th class="ct-row-action-col"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var group in groups)
-                    {
-                        <tr class="ct-group-row">
-                            <th colspan="6">@group.Name</th>
+            <div class="ct-table-wrap">
+                <table class="ct-table">
+                    <thead>
+                        <tr>
+                            <th class="ct-select-col"><input id="ct-select-all" type="checkbox" aria-label="Select all checks" /></th>
+                            <th>Title</th>
+                            <th>Check ID</th>
+                            <th>Result</th>
+                            <th>Previous Result</th>
                         </tr>
-
-                        @foreach (var check in group.Checks)
-                        {
-                            <tr class="ct-check-row ct-row-@check.Severity">
-                                <td class="ct-select-col"><input type="checkbox" aria-label="Select @check.Title" /></td>
-                                <td class="ct-title-cell">@check.Title</td>
-                                <td>@check.Area</td>
-                                <td>@check.Executed</td>
-                                <td>
-                                    <span class="ct-result ct-result-@check.Severity">
-                                        <span aria-hidden="true"></span>@check.Result
-                                    </span>
-                                </td>
-                                <td class="ct-row-action-col"><button type="button" aria-label="Open check details">></button></td>
-                            </tr>
-                        }
-                    }
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody id="ct-check-body"></tbody>
+                </table>
+            </div>
+        </section>
     </section>
+
+    <button type="button" class="ct-support">Support</button>
+
+    <footer class="ct-footer">
+        <button id="ct-run" type="button" class="ct-run" disabled>Run 0 Checks</button>
+        <div id="ct-progress-panel" class="ct-progress-panel" hidden>
+            <div class="ct-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div id="ct-progress-fill" class="ct-progress-fill"></div>
+                <span id="ct-progress-label" class="ct-progress-label">0 of 0 (0%)</span>
+            </div>
+            <button id="ct-cancel-run" type="button" class="ct-cancel-run">Cancel</button>
+        </div>
+    </footer>
 </div>
+
+<div id="ct-parameters-dialog" class="ct-parameters-dialog" role="dialog" aria-modal="true" aria-labelledby="ct-parameters-title" hidden>
+    <div class="ct-parameters-panel">
+        <header class="ct-parameters-header">
+            <h2 id="ct-parameters-title">Check Parameters</h2>
+        </header>
+        <div class="ct-parameters-body">
+            <p class="ct-parameters-intro">
+                Please enter the following parameters for check execution.
+                <span class="ct-parameters-help" aria-label="Help">?</span>
+            </p>
+            <div class="ct-parameters-field">
+                <span id="ct-goal-template-label">Please select goal plan template:<strong>*</strong></span>
+                <div class="ct-parameters-combobox">
+                    <button id="ct-goal-template" class="ct-parameters-select-button" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="ct-goal-template-label ct-goal-template-value">
+                        <span id="ct-goal-template-value">No Selection</span>
+                        <span aria-hidden="true"></span>
+                    </button>
+                    <div id="ct-goal-template-list" class="ct-parameters-options" role="listbox" aria-labelledby="ct-goal-template-label" hidden>
+                        <button type="button" role="option" class="ct-parameters-option" data-value="2019 Basic Goal Plan with Group Goals 2.0" title="2019 Basic Goal Plan with Group Goals 2.0">2019 Basic Goal Plan with Group Goals 2.0</button>
+                        <button type="button" role="option" class="ct-parameters-option" data-value="2019 Goal Plan for KTE Associates" title="2019 Goal Plan for KTE Associates">2019 Goal Plan for KTE Associates</button>
+                        <button type="button" role="option" class="ct-parameters-option" data-value="2019 Goal Plan for Sales Associates" title="2019 Goal Plan for Sales Associates">2019 Goal Plan for Sales Associates</button>
+                        <button type="button" role="option" class="ct-parameters-option" data-value="TMO Goal Plan" title="TMO Goal Plan">TMO Goal Plan</button>
+                    </div>
+                </div>
+            </div>
+            <div class="ct-parameters-divider"></div>
+        </div>
+        <footer class="ct-parameters-footer">
+            <button id="ct-parameters-cancel" type="button" class="ct-parameters-cancel">Cancel</button>
+            <button id="ct-parameters-run" type="button" class="ct-parameters-run">Run</button>
+        </footer>
+    </div>
+</div>
+
+<div id="ct-detail-dialog" class="ct-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="ct-detail-title" hidden>
+    <div class="ct-detail-panel">
+        <header class="ct-detail-header">
+            <h2 id="ct-detail-title">Detailed Results</h2>
+        </header>
+        <div class="ct-detail-body">
+            <section class="ct-detail-section">
+                <h3>Title (ID)</h3>
+                <p id="ct-detail-check-title"></p>
+            </section>
+            <section class="ct-detail-section">
+                <h3>Check Description</h3>
+                <p id="ct-detail-description"></p>
+            </section>
+            <section class="ct-detail-section">
+                <h3>Check Result</h3>
+                <p id="ct-detail-result"></p>
+            </section>
+            <section class="ct-detail-section">
+                <h3>Proposed Solution</h3>
+                <p id="ct-detail-solution-lead"></p>
+                <ul id="ct-detail-solutions"></ul>
+            </section>
+            <button type="button" class="ct-related-info">Search for related information</button>
+            <section class="ct-detail-section">
+                <h3>Need Assistance?</h3>
+                <p id="ct-detail-assistance"></p>
+            </section>
+            <section class="ct-detail-results">
+                <h3>Results (1)</h3>
+                <div class="ct-detail-result-table">
+                    <div id="ct-detail-result-heading" class="ct-detail-result-heading"></div>
+                    <div id="ct-detail-result-item" class="ct-detail-result-item"></div>
+                </div>
+            </section>
+        </div>
+        <footer class="ct-detail-footer">
+            <button type="button" class="ct-export-results">Export Results</button>
+            <button id="ct-detail-close" type="button" class="ct-detail-close">Close</button>
+        </footer>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const applications = {
+            'Role-Based Permissions': [
+                { id: 'rbp', type: 'node', level: 0, title: 'Role-Based Permissions' },
+                { id: 'dynamic-groups', type: 'node', level: 1, title: 'Dynamic Groups', parent: 'rbp' },
+                {
+                    id: 'CheckEveryOneGroup',
+                    type: 'check',
+                    level: 2,
+                    title: 'The "everyone" group exists.',
+                    checkId: 'CheckEveryOneGroup',
+                    parent: 'dynamic-groups',
+                    outcome: 'success'
+                },
+                { id: 'permissions', type: 'node', level: 1, title: 'Permissions', parent: 'rbp' },
+                {
+                    id: 'CheckAccessGroupNameLength',
+                    type: 'check',
+                    level: 2,
+                    title: 'Access group names associated with a rule are no more than 1000 characters in length.',
+                    checkId: 'CheckAccessGroupNameLength',
+                    parent: 'permissions',
+                    outcome: 'success'
+                },
+                {
+                    id: 'CheckRoleRuleAccessGroupUser',
+                    type: 'check',
+                    level: 2,
+                    title: 'All roles are associated with groups or users.',
+                    checkId: 'CheckRoleRuleAccessGroupUser',
+                    parent: 'permissions',
+                    outcome: 'error',
+                    resultText: '1 issue found.',
+                    details: {
+                        title: 'All roles are associated with groups or users.',
+                        id: 'CheckRoleRuleAccessGroupUser',
+                        description: 'If your system contains roles that are not associated with access permission groups or users, a run-time exception occurs when the group or user is refreshed or when the target population is calculated. This check validates if there any roles that exist without permission groups or users.',
+                        result: 'Executing CheckRoleRuleAccessGroupUser returned issues.',
+                        solutionLead: 'Please execute any of the proposed recommendations below for the roles listed in Results section:',
+                        solutions: [
+                            'Associate Permission Groups or Users that you want to grant this permission role to.',
+                            'Deactivate the rules that are not currently associated with any permission groups or users.',
+                            'Delete any rules that are not associated with permission groups or users.'
+                        ],
+                        assistance: 'If you need further assistance, use the Launchpad to contact SAP Cloud Support. We recommend filing a ticket under the component LOD-SF-PLT-RBP.',
+                        resultHeading: 'Roles Not Associated With Permission Groups or Users',
+                        resultItem: 'Interview Scheduling'
+                    }
+                },
+                {
+                    id: 'CheckRulePerRole',
+                    type: 'check',
+                    level: 2,
+                    title: 'No role is associated with more than 100 rules.',
+                    checkId: 'CheckRulePerRole',
+                    parent: 'permissions',
+                    outcome: 'success'
+                },
+                {
+                    id: 'CheckTargetGroupNameLength',
+                    type: 'check',
+                    level: 2,
+                    title: 'Target group names associated with a rule are no more than 1000 characters in length.',
+                    checkId: 'CheckTargetGroupNameLength',
+                    parent: 'permissions',
+                    outcome: 'success'
+                },
+                {
+                    id: 'CheckRoleRuleTargetGroup',
+                    type: 'check',
+                    level: 2,
+                    title: 'Target populations exist for all roles.',
+                    checkId: 'CheckRoleRuleTargetGroup',
+                    parent: 'permissions',
+                    outcome: 'success'
+                },
+                {
+                    id: 'CheckUserPermissions',
+                    type: 'check',
+                    level: 2,
+                    title: 'Users have not been granted the same permission more than 30 times.',
+                    checkId: 'CheckUserPermissions',
+                    parent: 'permissions',
+                    outcome: 'success'
+                }
+            ],
+            Goals: [
+                { id: 'goals', type: 'node', level: 0, title: 'Goals' },
+                { id: 'template-configuration', type: 'node', level: 1, title: 'Template Configuration', parent: 'goals', highlighted: true },
+                {
+                    id: 'TGMCheckMissingFieldDefinition',
+                    type: 'check',
+                    level: 2,
+                    title: 'Permission in the XML without a corresponding field definition.',
+                    checkId: 'TGMCheckMissingFieldDefinition',
+                    parent: 'template-configuration',
+                    outcome: 'success'
+                },
+                {
+                    id: 'TGMCheckGroupGoalSetting',
+                    type: 'check',
+                    level: 2,
+                    title: 'The "allow-group-goal" attribute is set to true in the XML Goal Plan template, when Group/Team Goal is enabled.',
+                    checkId: 'TGMCheckGroupGoalSetting',
+                    parent: 'template-configuration',
+                    outcome: 'success'
+                },
+                {
+                    id: 'TGMCheckCascaderRole',
+                    type: 'check',
+                    level: 2,
+                    title: 'The cascader role is enabled in the goal plan template without corresponding read and write permissions.',
+                    checkId: 'TGMCheckCascaderRole',
+                    parent: 'template-configuration',
+                    outcome: 'success'
+                }
+            ],
+            Development: [
+                { id: 'development', type: 'node', level: 0, title: 'Development' },
+                { id: 'career-worksheet', type: 'node', level: 1, title: 'Career Worksheet', parent: 'development' },
+                {
+                    id: 'CWSJobDescriptionCheckExecutor',
+                    type: 'check',
+                    level: 2,
+                    title: 'Job descriptions are consistent on different Career Worksheet UIs.',
+                    checkId: 'CWSJobDescriptionCheckExecutor',
+                    parent: 'career-worksheet',
+                    outcome: 'success'
+                },
+                { id: 'development-plan', type: 'node', level: 1, title: 'Development Plan', parent: 'development' },
+                {
+                    id: 'DevelopmentObjectiveTemplateReportableCustomFields',
+                    type: 'check',
+                    level: 2,
+                    title: 'Custom fields in development objective templates are reportable.',
+                    checkId: 'DevelopmentObjectiveTemplateReportableCustomFields',
+                    parent: 'development-plan',
+                    outcome: 'success'
+                },
+                {
+                    id: 'DevelopmentObjectiveTemplateReportableCustomFieldsLimit',
+                    type: 'check',
+                    level: 2,
+                    title: 'The number of reportable custom fields is within the supported limit.',
+                    checkId: 'DevelopmentObjectiveTemplateReportableCustomFieldsLimit',
+                    parent: 'development-plan',
+                    outcome: 'success'
+                }
+            ]
+        };
+
+        const tabs = Array.from(document.querySelectorAll('.ct-tabs button'));
+        const resultTypeButton = document.getElementById('ct-result-type-button');
+        const resultTypeTokens = document.getElementById('ct-result-type-tokens');
+        const resultTypeOptions = document.getElementById('ct-result-type-options');
+        const resultTypeInputs = Array.from(resultTypeOptions.querySelectorAll('input'));
+        const applicationSelect = document.getElementById('application');
+        const areaSelect = document.getElementById('ct-area-filter');
+        const titleFilter = document.getElementById('ct-title-filter');
+        const goButton = document.getElementById('ct-go');
+        const title = document.getElementById('available-checks-title');
+        const tbody = document.getElementById('ct-check-body');
+        const selectAll = document.getElementById('ct-select-all');
+        const collapseButton = document.querySelector('.ct-collapse');
+        const expandButton = document.querySelector('.ct-expand');
+        const runButton = document.getElementById('ct-run');
+        const progressPanel = document.getElementById('ct-progress-panel');
+        const progressTrack = progressPanel.querySelector('.ct-progress-track');
+        const progressFill = document.getElementById('ct-progress-fill');
+        const progressLabel = document.getElementById('ct-progress-label');
+        const cancelButton = document.getElementById('ct-cancel-run');
+        const parametersDialog = document.getElementById('ct-parameters-dialog');
+        const parametersCancel = document.getElementById('ct-parameters-cancel');
+        const parametersRun = document.getElementById('ct-parameters-run');
+        const goalTemplateButton = document.getElementById('ct-goal-template');
+        const goalTemplateValue = document.getElementById('ct-goal-template-value');
+        const goalTemplateList = document.getElementById('ct-goal-template-list');
+        const goalTemplateOptions = Array.from(goalTemplateList.querySelectorAll('.ct-parameters-option'));
+        const detailDialog = document.getElementById('ct-detail-dialog');
+        const detailClose = document.getElementById('ct-detail-close');
+        const detailTitle = document.getElementById('ct-detail-check-title');
+        const detailDescription = document.getElementById('ct-detail-description');
+        const detailResult = document.getElementById('ct-detail-result');
+        const detailSolutionLead = document.getElementById('ct-detail-solution-lead');
+        const detailSolutions = document.getElementById('ct-detail-solutions');
+        const detailAssistance = document.getElementById('ct-detail-assistance');
+        const detailResultHeading = document.getElementById('ct-detail-result-heading');
+        const detailResultItem = document.getElementById('ct-detail-result-item');
+        let rows = [];
+        let rowMap = new Map();
+        let runningTimer = null;
+        let isRunning = false;
+        let runTotal = 0;
+        let completedCount = 0;
+        let allowGoalsRun = false;
+        let activeApplication = applicationSelect.value;
+        let activeResultTypes = [];
+        let activeArea = '';
+        let activeTitleFilter = '';
+
+        function getSelectedResultTypes() {
+            return resultTypeInputs.filter(input => input.checked).map(input => input.value);
+        }
+
+        function getResultTypeLabel(value) {
+            if (value === 'error') return 'Error';
+            if (value === 'warning') return 'Warning';
+            return 'Success';
+        }
+
+        function updateResultTypeTokens() {
+            const selectedTypes = getSelectedResultTypes();
+            resultTypeTokens.innerHTML = '';
+
+            if (selectedTypes.length === 0) {
+                const placeholder = document.createElement('span');
+                placeholder.className = 'ct-result-type-placeholder';
+                placeholder.textContent = 'Select result type';
+                resultTypeTokens.appendChild(placeholder);
+            } else {
+                selectedTypes.forEach(function (value) {
+                    const token = document.createElement('span');
+                    token.className = 'ct-result-type-token';
+
+                    const label = document.createElement('span');
+                    label.textContent = getResultTypeLabel(value);
+                    token.appendChild(label);
+
+                    const remove = document.createElement('button');
+                    remove.type = 'button';
+                    remove.setAttribute('aria-label', 'Remove ' + getResultTypeLabel(value));
+                    remove.textContent = 'x';
+                    remove.addEventListener('click', function (event) {
+                        event.stopPropagation();
+                        const input = resultTypeInputs.find(item => item.value === value);
+                        if (input) input.checked = false;
+                        updateResultTypeTokens();
+                    });
+                    token.appendChild(remove);
+                    resultTypeTokens.appendChild(token);
+                });
+            }
+        }
+
+        function openResultTypeOptions() {
+            resultTypeOptions.hidden = false;
+            resultTypeButton.classList.add('is-open');
+            resultTypeButton.setAttribute('aria-expanded', 'true');
+        }
+
+        function closeResultTypeOptions() {
+            resultTypeOptions.hidden = true;
+            resultTypeButton.classList.remove('is-open');
+            resultTypeButton.setAttribute('aria-expanded', 'false');
+        }
+
+        function getSourceRows(applicationName) {
+            return applications[applicationName] || [];
+        }
+
+        function buildFilteredRows(applicationName, resultTypes, area, titleText) {
+            const sourceRows = getSourceRows(applicationName);
+            const sourceMap = new Map(sourceRows.map(row => [row.id, row]));
+            const included = new Set();
+            const selectedTypes = new Set(resultTypes.length > 0 ? resultTypes : ['error', 'warning', 'success']);
+            const normalizedArea = area.trim().toLowerCase();
+            const normalizedTitle = titleText.trim().toLowerCase();
+
+            const checkMatchesArea = function (row) {
+                if (!normalizedArea) return true;
+
+                let current = row;
+                while (current) {
+                    if (current.type === 'node' && current.title.toLowerCase() === normalizedArea) return true;
+                    current = current.parent ? sourceMap.get(current.parent) : null;
+                }
+
+                return false;
+            };
+
+            const checkMatchesTitle = function (row) {
+                if (!normalizedTitle) return true;
+
+                return row.title.toLowerCase().includes(normalizedTitle)
+                    || (row.checkId || '').toLowerCase().includes(normalizedTitle);
+            };
+
+            sourceRows.forEach(function (row) {
+                if (row.type !== 'check') return;
+                if (!selectedTypes.has(row.outcome)) return;
+                if (!checkMatchesArea(row) || !checkMatchesTitle(row)) return;
+
+                included.add(row.id);
+                let parentId = row.parent;
+                while (parentId) {
+                    included.add(parentId);
+                    const parent = sourceMap.get(parentId);
+                    parentId = parent ? parent.parent : null;
+                }
+            });
+
+            return sourceRows.filter(row => included.has(row.id)).map(row => ({ ...row }));
+        }
+
+        function applyFilters() {
+            activeApplication = applicationSelect.value;
+            activeResultTypes = getSelectedResultTypes();
+            activeArea = areaSelect.value;
+            activeTitleFilter = titleFilter.value;
+            renderApplication();
+        }
+
+        function getLeafRows() {
+            return rows.filter(row => row.type === 'check');
+        }
+
+        function getDescendants(rowId) {
+            const descendants = [];
+            const collect = function (parentId) {
+                rows.filter(row => row.parent === parentId).forEach(function (row) {
+                    descendants.push(row);
+                    collect(row.id);
+                });
+            };
+
+            collect(rowId);
+            return descendants;
+        }
+
+        function getAncestorNodes(row) {
+            const ancestors = [];
+            let current = row;
+            while (current.parent) {
+                current = rowMap.get(current.parent);
+                if (current) ancestors.push(current);
+            }
+            return ancestors;
+        }
+
+        function clearRunTimer() {
+            if (runningTimer) {
+                window.clearTimeout(runningTimer);
+                runningTimer = null;
+            }
+        }
+
+        function renderApplication() {
+            clearRunTimer();
+            isRunning = false;
+            rows = buildFilteredRows(activeApplication, activeResultTypes, activeArea, activeTitleFilter);
+            rowMap = new Map(rows.map(row => [row.id, row]));
+            title.textContent = 'Available Checks (' + getLeafRows().length + ')';
+            tbody.innerHTML = '';
+
+            rows.forEach(function (row) {
+                row.status = '';
+                row.selectedForRun = false;
+                row.expanded = true;
+
+                const tr = document.createElement('tr');
+                tr.className = row.type === 'node' ? 'ct-node-row ct-level-' + row.level : 'ct-leaf-row ct-level-' + row.level;
+                tr.dataset.rowId = row.id;
+                tr.classList.toggle('ct-row-highlight', row.highlighted === true);
+
+                const selectCell = document.createElement('td');
+                selectCell.className = 'ct-select-col';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.setAttribute('aria-label', 'Select ' + row.title);
+                checkbox.addEventListener('change', function () {
+                    handleRowSelection(row, checkbox.checked);
+                });
+                selectCell.appendChild(checkbox);
+                tr.appendChild(selectCell);
+
+                const titleCell = document.createElement(row.type === 'node' ? 'th' : 'td');
+                if (row.type === 'node') {
+                    titleCell.scope = 'row';
+                    const toggle = document.createElement('button');
+                    toggle.type = 'button';
+                    toggle.className = 'ct-tree-toggle';
+                    toggle.setAttribute('aria-label', 'Collapse ' + row.title);
+                    toggle.setAttribute('aria-expanded', 'true');
+                    toggle.addEventListener('click', function () {
+                        setNodeExpanded(row, !row.expanded);
+                        applyExpansionState();
+                    });
+                    const caret = document.createElement('span');
+                    caret.setAttribute('aria-hidden', 'true');
+                    toggle.appendChild(caret);
+                    titleCell.appendChild(toggle);
+                    row.toggle = toggle;
+                }
+
+                const titleText = document.createElement('span');
+                titleText.textContent = row.title;
+                titleCell.appendChild(titleText);
+                tr.appendChild(titleCell);
+
+                const idCell = document.createElement('td');
+                if (row.checkId) {
+                    const link = document.createElement('a');
+                    link.href = '#';
+                    link.title = row.checkId;
+                    link.textContent = row.checkId;
+                    idCell.appendChild(link);
+                }
+                tr.appendChild(idCell);
+
+                const resultCell = document.createElement('td');
+                resultCell.className = 'ct-result-cell';
+                tr.appendChild(resultCell);
+                tr.appendChild(document.createElement('td'));
+
+                tbody.appendChild(tr);
+                row.element = tr;
+                row.checkbox = checkbox;
+                row.resultCell = resultCell;
+            });
+
+            selectAll.checked = false;
+            selectAll.indeterminate = false;
+            setControlsDisabled(false);
+            setProgressVisible(false);
+            runButton.disabled = true;
+            applyExpansionState();
+            updateRunButton();
+        }
+
+        function setNodeExpanded(row, expanded) {
+            if (row.type !== 'node') return;
+            row.expanded = expanded;
+            row.toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            row.toggle.setAttribute('aria-label', (expanded ? 'Collapse ' : 'Expand ') + row.title);
+            row.toggle.classList.toggle('is-collapsed', !expanded);
+        }
+
+        function isRowVisible(row) {
+            return getAncestorNodes(row).every(ancestor => ancestor.expanded);
+        }
+
+        function applyExpansionState() {
+            rows.forEach(function (row) {
+                row.element.hidden = !isRowVisible(row);
+                if (row.type === 'node') {
+                    setNodeExpanded(row, row.expanded);
+                }
+            });
+        }
+
+        function setAllExpanded(expanded) {
+            rows.filter(row => row.type === 'node').forEach(row => setNodeExpanded(row, expanded));
+            applyExpansionState();
+        }
+
+        function handleRowSelection(row, checked) {
+            clearStatuses();
+            setSelected(row, checked);
+            getDescendants(row.id).forEach(descendant => setSelected(descendant, checked));
+            getAncestorNodes(row).forEach(syncNodeSelection);
+            syncSelectAll();
+            updateRunButton();
+        }
+
+        function setSelected(row, checked) {
+            row.checkbox.checked = checked;
+            row.checkbox.indeterminate = false;
+            row.element.classList.toggle('ct-row-selected', checked);
+        }
+
+        function syncNodeSelection(node) {
+            const leaves = getDescendants(node.id).filter(row => row.type === 'check');
+            const selectedCount = leaves.filter(row => row.checkbox.checked).length;
+            node.checkbox.checked = leaves.length > 0 && selectedCount === leaves.length;
+            node.checkbox.indeterminate = selectedCount > 0 && selectedCount < leaves.length;
+            node.element.classList.toggle('ct-row-selected', selectedCount > 0);
+        }
+
+        function syncSelectAll() {
+            const leaves = getLeafRows();
+            const selectedCount = leaves.filter(row => row.checkbox.checked).length;
+            selectAll.checked = leaves.length > 0 && selectedCount === leaves.length;
+            selectAll.indeterminate = selectedCount > 0 && selectedCount < leaves.length;
+        }
+
+        function updateRunButton() {
+            const selectedCount = getLeafRows().filter(row => row.checkbox.checked).length;
+            runButton.textContent = 'Run ' + selectedCount + ' ' + (selectedCount === 1 ? 'Check' : 'Checks');
+            runButton.disabled = selectedCount === 0 || isRunning;
+        }
+
+        function setControlsDisabled(disabled) {
+            resultTypeButton.disabled = disabled;
+            resultTypeInputs.forEach(input => input.disabled = disabled);
+            applicationSelect.disabled = disabled;
+            areaSelect.disabled = disabled;
+            titleFilter.disabled = disabled;
+            goButton.disabled = disabled;
+            selectAll.disabled = disabled || getLeafRows().length === 0;
+            rows.forEach(row => row.checkbox.disabled = disabled);
+        }
+
+        function setProgressVisible(visible) {
+            progressPanel.hidden = !visible;
+            runButton.hidden = visible;
+            if (!visible) {
+                updateProgress(0, 0);
+            }
+        }
+
+        function updateProgress(completed, total) {
+            const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+            progressFill.style.width = percent + '%';
+            progressLabel.textContent = completed + ' of ' + total + ' (' + percent + '%)';
+            progressTrack.setAttribute('aria-valuenow', percent.toString());
+            progressTrack.setAttribute('aria-valuetext', progressLabel.textContent);
+        }
+
+        function getDetailRow(row) {
+            if (row.details) return row;
+            return getDescendants(row.id).find(descendant => descendant.status === 'error' && descendant.details);
+        }
+
+        function openDetailDialog(row) {
+            if (!row || !row.details) return;
+
+            const details = row.details;
+            detailTitle.textContent = details.title + ' (' + details.id + ')';
+            detailDescription.textContent = details.description;
+            detailResult.textContent = details.result;
+            detailSolutionLead.textContent = details.solutionLead;
+            detailSolutions.innerHTML = '';
+            details.solutions.forEach(function (solution) {
+                const item = document.createElement('li');
+                item.textContent = solution;
+                detailSolutions.appendChild(item);
+            });
+            detailAssistance.textContent = details.assistance;
+            detailResultHeading.textContent = details.resultHeading;
+            detailResultItem.textContent = details.resultItem;
+            detailDialog.hidden = false;
+            document.body.classList.add('ct-detail-open');
+            detailClose.focus();
+        }
+
+        function closeDetailDialog() {
+            detailDialog.hidden = true;
+            document.body.classList.remove('ct-detail-open');
+        }
+
+        function setGoalTemplate(value) {
+            goalTemplateValue.textContent = value;
+            goalTemplateButton.dataset.value = value;
+            goalTemplateOptions.forEach(function (option) {
+                option.setAttribute('aria-selected', option.dataset.value === value ? 'true' : 'false');
+            });
+        }
+
+        function openGoalTemplateList() {
+            goalTemplateList.hidden = false;
+            goalTemplateButton.setAttribute('aria-expanded', 'true');
+            goalTemplateButton.classList.add('is-open');
+        }
+
+        function closeGoalTemplateList() {
+            goalTemplateList.hidden = true;
+            goalTemplateButton.setAttribute('aria-expanded', 'false');
+            goalTemplateButton.classList.remove('is-open');
+        }
+
+        function openParametersDialog() {
+            setGoalTemplate('No Selection');
+            closeGoalTemplateList();
+            parametersDialog.hidden = false;
+            document.body.classList.add('ct-detail-open');
+            goalTemplateButton.focus();
+        }
+
+        function closeParametersDialog() {
+            closeGoalTemplateList();
+            parametersDialog.hidden = true;
+            document.body.classList.remove('ct-detail-open');
+        }
+
+        function clearStatuses() {
+            rows.forEach(function (row) {
+                row.status = '';
+                row.selectedForRun = false;
+                row.element.classList.remove('ct-row-success', 'ct-row-error', 'ct-row-warning', 'ct-row-running', 'ct-row-waiting');
+                row.resultCell.innerHTML = '';
+            });
+        }
+
+        function updateStatus(row, status, text) {
+            row.status = status;
+            row.element.classList.remove('ct-row-success', 'ct-row-error', 'ct-row-warning', 'ct-row-running', 'ct-row-waiting');
+            if (status) row.element.classList.add('ct-row-' + status);
+
+            row.resultCell.innerHTML = '';
+            if (!status) return;
+
+            const result = document.createElement('span');
+            result.className = 'ct-result ct-result-' + status;
+            const icon = document.createElement('span');
+            icon.className = 'ct-result-icon';
+            icon.setAttribute('aria-hidden', 'true');
+            result.appendChild(icon);
+
+            if (text) {
+                const detailRow = status === 'error' ? getDetailRow(row) : null;
+                const label = document.createElement(detailRow ? 'button' : 'span');
+                label.textContent = text;
+                if (detailRow) {
+                    label.type = 'button';
+                    label.className = 'ct-result-link';
+                    label.addEventListener('click', function () {
+                        openDetailDialog(detailRow);
+                    });
+                }
+                result.appendChild(label);
+            }
+
+            row.resultCell.appendChild(result);
+        }
+
+        function updateAggregates() {
+            rows.filter(row => row.type === 'node').reverse().forEach(function (node) {
+                const leaves = getDescendants(node.id).filter(row => row.type === 'check' && row.selectedForRun);
+                if (leaves.length === 0) {
+                    updateStatus(node, '', '');
+                    return;
+                }
+
+                const running = leaves.some(row => row.status === 'running');
+                const waiting = leaves.some(row => row.status === 'waiting');
+                const done = leaves.every(row => row.status === 'success' || row.status === 'error' || row.status === 'warning');
+                const errors = leaves.filter(row => row.status === 'error').length;
+                const warnings = leaves.filter(row => row.status === 'warning').length;
+
+                if (running) {
+                    updateStatus(node, 'running', 'Running...');
+                } else if (waiting) {
+                    updateStatus(node, 'waiting', 'Waiting...');
+                } else if (done && errors > 0) {
+                    updateStatus(node, 'error', errors + ' ' + (errors === 1 ? 'check' : 'checks') + ' with error.');
+                } else if (done && warnings > 0) {
+                    updateStatus(node, 'warning', warnings + ' ' + (warnings === 1 ? 'check' : 'checks') + ' with warning.');
+                } else if (done) {
+                    updateStatus(node, 'success', '');
+                }
+            });
+        }
+
+        function runSelectedChecks() {
+            if (activeApplication === 'Goals' && !allowGoalsRun) {
+                openParametersDialog();
+                return;
+            }
+
+            allowGoalsRun = false;
+            clearRunTimer();
+            clearStatuses();
+
+            const selectedChecks = getLeafRows().filter(row => row.checkbox.checked);
+            if (selectedChecks.length === 0) return;
+
+            runTotal = selectedChecks.length;
+            completedCount = 0;
+            updateProgress(completedCount, runTotal);
+            setProgressVisible(true);
+
+            selectedChecks.forEach(function (row) {
+                row.selectedForRun = true;
+                updateStatus(row, 'waiting', 'Waiting...');
+            });
+            updateAggregates();
+
+            let index = 0;
+            isRunning = true;
+            setControlsDisabled(true);
+            runButton.disabled = true;
+
+            const runNext = function () {
+                if (index >= selectedChecks.length) {
+                    isRunning = false;
+                    setControlsDisabled(false);
+                    updateAggregates();
+                    setProgressVisible(false);
+                    updateRunButton();
+                    return;
+                }
+
+                const row = selectedChecks[index];
+                updateStatus(row, 'running', 'Running...');
+                updateAggregates();
+
+                runningTimer = window.setTimeout(function () {
+                    const status = row.outcome === 'error' ? 'error' : row.outcome === 'warning' ? 'warning' : 'success';
+                    const statusText = status === 'error'
+                        ? row.resultText || '1 issue found.'
+                        : status === 'warning'
+                            ? row.resultText || '1 warning found.'
+                            : '';
+                    updateStatus(row, status, statusText);
+                    completedCount++;
+                    updateProgress(completedCount, runTotal);
+                    index++;
+                    updateAggregates();
+                    runNext();
+                }, 800);
+            };
+
+            runNext();
+        }
+
+        function cancelRun() {
+            clearRunTimer();
+            isRunning = false;
+            setControlsDisabled(false);
+            rows.forEach(function (row) {
+                if (row.status === 'running' || row.status === 'waiting') {
+                    row.selectedForRun = false;
+                    updateStatus(row, '', '');
+                }
+            });
+            updateAggregates();
+            setProgressVisible(false);
+            updateRunButton();
+        }
+
+        selectAll.addEventListener('change', function () {
+            clearStatuses();
+            rows.forEach(row => setSelected(row, selectAll.checked));
+            syncSelectAll();
+            updateRunButton();
+        });
+
+        tabs.forEach(function (tab) {
+            tab.addEventListener('click', function () {
+                tabs.forEach(function (item) {
+                    const isActive = item === tab;
+                    item.classList.toggle('is-active', isActive);
+                    item.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                });
+            });
+        });
+        resultTypeButton.addEventListener('click', function () {
+            if (resultTypeOptions.hidden) {
+                openResultTypeOptions();
+            } else {
+                closeResultTypeOptions();
+            }
+        });
+        resultTypeInputs.forEach(function (input) {
+            input.addEventListener('change', updateResultTypeTokens);
+        });
+        goButton.addEventListener('click', applyFilters);
+        titleFilter.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                applyFilters();
+            }
+        });
+        collapseButton.addEventListener('click', function () {
+            setAllExpanded(false);
+        });
+        expandButton.addEventListener('click', function () {
+            setAllExpanded(true);
+        });
+        runButton.addEventListener('click', runSelectedChecks);
+        cancelButton.addEventListener('click', cancelRun);
+        goalTemplateButton.addEventListener('click', function () {
+            if (goalTemplateList.hidden) {
+                openGoalTemplateList();
+            } else {
+                closeGoalTemplateList();
+            }
+        });
+        goalTemplateOptions.forEach(function (option) {
+            option.addEventListener('click', function () {
+                setGoalTemplate(option.dataset.value);
+                closeGoalTemplateList();
+                goalTemplateButton.focus();
+            });
+        });
+        parametersCancel.addEventListener('click', closeParametersDialog);
+        parametersRun.addEventListener('click', function () {
+            allowGoalsRun = true;
+            closeParametersDialog();
+            runSelectedChecks();
+        });
+        parametersDialog.addEventListener('click', function (event) {
+            if (event.target === parametersDialog) {
+                closeParametersDialog();
+            } else if (!goalTemplateButton.contains(event.target) && !goalTemplateList.contains(event.target)) {
+                closeGoalTemplateList();
+            }
+        });
+        detailClose.addEventListener('click', closeDetailDialog);
+        detailDialog.addEventListener('click', function (event) {
+            if (event.target === detailDialog) {
+                closeDetailDialog();
+            }
+        });
+        document.addEventListener('click', function (event) {
+            if (!resultTypeButton.contains(event.target) && !resultTypeOptions.contains(event.target)) {
+                closeResultTypeOptions();
+            }
+        });
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && !resultTypeOptions.hidden) {
+                closeResultTypeOptions();
+                resultTypeButton.focus();
+                return;
+            }
+
+            if (event.key === 'Escape' && !parametersDialog.hidden) {
+                if (!goalTemplateList.hidden) {
+                    closeGoalTemplateList();
+                } else {
+                    closeParametersDialog();
+                }
+                return;
+            }
+
+            if (event.key === 'Escape' && !detailDialog.hidden) {
+                closeDetailDialog();
+            }
+        });
+        updateResultTypeTokens();
+        applyFilters();
+    })();
+</script>

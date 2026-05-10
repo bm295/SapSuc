@@ -94,7 +94,7 @@
         </div>
 
         <div class="prd-footer">
-            <button type="button" class="prd-save">Save Changes</button>
+            <button id="prd-save-changes" type="button" class="prd-save">Save Changes</button>
             <button type="button" class="prd-cancel">Cancel</button>
         </div>
     </section>
@@ -147,7 +147,7 @@
 
                     <div class="ps-check-list" role="list">
                         <label class="ps-check-row" role="listitem">
-                            <input type="checkbox" checked />
+                            <input type="checkbox" checked data-ps-select-all />
                             <span>Select All</span>
                         </label>
                         <label class="ps-check-row ps-access-check-tool" role="listitem">
@@ -183,10 +183,45 @@
 <script>
     (function () {
         const openButton = document.getElementById('prd-open-permissions');
+        const saveButton = document.getElementById('prd-save-changes');
         const dialog = document.getElementById('permission-settings-dialog');
         const doneButton = document.getElementById('ps-done');
         const cancelButton = document.getElementById('ps-cancel');
-        if (!openButton || !dialog || !doneButton || !cancelButton) return;
+        if (!openButton || !saveButton || !dialog || !doneButton || !cancelButton) return;
+
+        const selectAllCheckbox = dialog.querySelector('[data-ps-select-all]');
+        const permissionCheckboxes = Array.from(dialog.querySelectorAll('.ps-check-list input[type="checkbox"]:not([data-ps-select-all])'));
+
+        function updateSelectAllState() {
+            if (!selectAllCheckbox || permissionCheckboxes.length === 0) return;
+
+            const allChecked = permissionCheckboxes.every(function (checkbox) {
+                return checkbox.checked;
+            });
+            const noneChecked = permissionCheckboxes.every(function (checkbox) {
+                return !checkbox.checked;
+            });
+
+            selectAllCheckbox.checked = allChecked;
+            selectAllCheckbox.indeterminate = !allChecked && !noneChecked;
+        }
+
+        if (selectAllCheckbox && permissionCheckboxes.length > 0) {
+            selectAllCheckbox.addEventListener('change', function () {
+                const isChecked = selectAllCheckbox.checked;
+                selectAllCheckbox.indeterminate = false;
+
+                permissionCheckboxes.forEach(function (checkbox) {
+                    checkbox.checked = isChecked;
+                });
+            });
+
+            permissionCheckboxes.forEach(function (checkbox) {
+                checkbox.addEventListener('change', updateSelectAllState);
+            });
+
+            updateSelectAllState();
+        }
 
         function openDialog() {
             dialog.hidden = false;
@@ -201,6 +236,9 @@
         }
 
         openButton.addEventListener('click', openDialog);
+        saveButton.addEventListener('click', function () {
+            window.location.href = '/ManagePermissionRoles';
+        });
         doneButton.addEventListener('click', closeDialog);
         cancelButton.addEventListener('click', closeDialog);
 
