@@ -43,7 +43,8 @@ ASP.NET Core Razor Pages app targeting `net9.0`. It references `SapSuc.Core`.
 
 Important files:
 
-- `Program.cs` - web app bootstrap, DI registration, session setup, static asset/Razor Pages mapping, and seeded sample HR data.
+- `Program.cs` - web app bootstrap, DI registration, session setup, and static asset/Razor Pages mapping.
+- `HrPlatformSeeder.cs` - creation of the in-memory HR service and its sample data.
 - `Pages/Index.cshtml` - main Proxy Management UI.
 - `Pages/Index.cshtml.cs` - main page model and all proxy management handlers.
 - `Pages/Shared/_Layout.cshtml` - SAP/Fiori-like shell layout.
@@ -56,7 +57,7 @@ Important files:
 ## Main Runtime Flow
 
 1. `src/SapSuc.Web/Program.cs` creates the Razor Pages app.
-2. `HrPlatformService` is registered as a singleton and seeded with sample employees and proxy assignments.
+2. `HrPlatformSeeder` creates an `HrPlatformService` with sample employees and proxy assignments, which is registered as a singleton.
 3. Browser requests route to `Pages/Index.cshtml`.
 4. `IndexModel` in `Pages/Index.cshtml.cs` reads the in-memory service, builds view models, and handles form posts.
 5. Domain operations are delegated to `HrPlatformService`.
@@ -134,4 +135,4 @@ The web project currently has no dedicated test project. Running `dotnet test` a
 - Main proxy UI behavior: `src/SapSuc.Web/Pages/Index.cshtml.cs`
 - Main proxy markup: `src/SapSuc.Web/Pages/Index.cshtml`
 - App styling: `src/SapSuc.Web/wwwroot/css/site.css`
-- Seed data: `src/SapSuc.Web/Program.cs`
+- Seed data: `src/SapSuc.Web/HrPlatformSeeder.cs`
