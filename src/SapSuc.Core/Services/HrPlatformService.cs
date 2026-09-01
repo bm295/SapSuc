@@ -11,6 +11,8 @@ public sealed class HrPlatformService
     private readonly List<CompensationRecord> _compensations = [];
     private readonly Dictionary<Guid, int> _leaveBalances = [];
     private readonly List<ProxyAssignment> _proxyAssignments = [];
+    private readonly Dictionary<Guid, string> _lineManagerDepartments = [];
+    private readonly HashSet<Guid> _directReportsOnlyProfileAccessManagers = [];
 
     public bool AllowEmployeeProxySelfService { get; private set; }
     public bool AllowManagerAccessToDocumentRevisionHistory { get; private set; } = true;
@@ -34,6 +36,38 @@ public sealed class HrPlatformService
         {
             CaseInsensitiveUsernamesEnabled = true;
         }
+    }
+
+    public void AssignLineManagerToDepartment(Guid managerEmployeeId, string department)
+    {
+        EnsureEmployeeExists(managerEmployeeId);
+
+        if (string.IsNullOrWhiteSpace(department))
+            throw new ArgumentException("A managed department is required.", nameof(department));
+
+        _lineManagerDepartments[managerEmployeeId] = department.Trim();
+    }
+
+    public void GrantDirectReportsOnlyProfileAccess(Guid managerEmployeeId)
+    {
+        EnsureEmployeeExists(managerEmployeeId);
+        _directReportsOnlyProfileAccessManagers.Add(managerEmployeeId);
+    }
+
+    public bool CanViewEmployeeProfile(Guid managerEmployeeId, Guid employeeId)
+    {
+        EnsureEmployeeExists(managerEmployeeId);
+        var employee = _employees.FirstOrDefault(candidate => candidate.Id == employeeId);
+
+        if (employee is null ||
+            !_directReportsOnlyProfileAccessManagers.Contains(managerEmployeeId) ||
+            !_lineManagerDepartments.TryGetValue(managerEmployeeId, out var managedDepartment) ||
+            string.IsNullOrWhiteSpace(employee.Department))
+        {
+            return false;
+        }
+
+        return string.Equals(employee.Department, managedDepartment, StringComparison.OrdinalIgnoreCase);
     }
 
     public Employee HireEmployee(string employeeNumber, string firstName, string lastName, string department, string title, DateTime hireDate, int yearlyLeaveEntitlement, string? assignmentId = null)

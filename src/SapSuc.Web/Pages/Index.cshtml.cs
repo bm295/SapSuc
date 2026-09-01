@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.VisualBasic.FileIO;
 using SuccessFactorsLike.Domain;
+using SuccessFactorsLike.Integration.AdapterBridge;
 using SuccessFactorsLike.Services;
 
 namespace SapSuc.Web.Pages;
@@ -17,10 +18,12 @@ public class IndexModel : PageModel
     private static readonly DateTime OpenEndedProxyEndDate = DateTime.MaxValue;
 
     private readonly HrPlatformService _hrPlatform;
+    private readonly AdapterImportExecutor _adapterImportExecutor;
 
-    public IndexModel(HrPlatformService hrPlatform)
+    public IndexModel(HrPlatformService hrPlatform, AdapterImportExecutor adapterImportExecutor)
     {
         _hrPlatform = hrPlatform;
+        _adapterImportExecutor = adapterImportExecutor;
     }
 
     [BindProperty]
@@ -143,7 +146,15 @@ public class IndexModel : PageModel
         await using var stream = Import.CsvFile!.OpenReadStream();
         using var reader = new StreamReader(stream);
 
-        var result = ImportProxyCsv(reader);
+        ProxyImportResult? result = null;
+        _adapterImportExecutor.Execute(() => result = ImportProxyCsv(reader));
+
+        if (result is null)
+        {
+            ModelState.AddModelError($"{nameof(Import)}.{nameof(Import.CsvFile)}", "CSV import could not be completed.");
+            PreparePage(initializeInput: true);
+            return Page();
+        }
 
         if (result.Created == 0 && result.Removed == 0 && result.Errors.Count > 0)
         {

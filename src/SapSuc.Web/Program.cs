@@ -1,7 +1,10 @@
+using SuccessFactorsLike.Integration.AdapterBridge;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
 builder.Services.AddSingleton(_ => HrPlatformSeeder.Create());
+builder.Services.AddSingleton<AdapterImportExecutor>();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
