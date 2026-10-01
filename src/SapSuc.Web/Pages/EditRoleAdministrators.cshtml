@@ -75,6 +75,11 @@
 
                 <div class="prd-permission-block prd-targeted">
                     <h4>Employee Data</h4>
+                    <input id="prd-profile-read-direct-reports" type="hidden" name="ProfileReadDirectReportsOnly" value="false" />
+                    <div id="prd-profile-read-summary" class="prd-permission-line" aria-live="polite" hidden>
+                        <span>Employee profile read access</span>
+                        <span>Direct reports only</span>
+                    </div>
                     <div class="prd-permission-line">
                         <span>Job Classification</span>
                         <span>View:Edit</span>
@@ -117,10 +122,11 @@
 
             <div class="ps-content">
                 <nav class="ps-categories" aria-label="Permission categories">
-                    <div class="ps-tree-group collapsed">
+                    <div class="ps-tree-group expanded">
                         <span aria-hidden="true"></span>
                         <strong>User Permissions</strong>
                     </div>
+                    <a class="selected" href="#ps-employee-profile" data-ps-category="ps-employee-profile" aria-current="true">Employee Profile</a>
                     <div class="ps-tree-group expanded">
                         <span aria-hidden="true"></span>
                         <strong>Administrator Permissions</strong>
@@ -137,12 +143,23 @@
                     <a href="#">Manage Deductions</a>
                     <a href="#">Manage Workflows</a>
                     <a href="#">Admin Alerts</a>
-                    <a class="selected" href="#" aria-current="true">Check Tool</a>
+                    <a href="#ps-check-tool" data-ps-category="ps-check-tool">Check Tool</a>
                     <a href="#">Manage Compensation</a>
                     <a href="#">Manage Recruiting</a>
                 </nav>
 
-                <section class="ps-permissions" aria-labelledby="ps-check-tool-title">
+                <section id="ps-employee-profile" class="ps-permissions" aria-labelledby="ps-employee-profile-title">
+                    <h3 id="ps-employee-profile-title">Employee Profile</h3>
+                    <div class="ps-check-list">
+                        <label class="ps-check-row" for="ps-profile-read-direct-reports">
+                            <input id="ps-profile-read-direct-reports" type="checkbox" />
+                            <span>Employee profile read access for direct reports only</span>
+                        </label>
+                    </div>
+                    <p>Direct reports only means employees in the Line Manager's assigned department.</p>
+                </section>
+
+                <section id="ps-check-tool" class="ps-permissions" aria-labelledby="ps-check-tool-title" hidden>
                     <h3 id="ps-check-tool-title">Check Tool</h3>
 
                     <div class="ps-check-list" role="list">
@@ -189,8 +206,30 @@
         const cancelButton = document.getElementById('ps-cancel');
         if (!openButton || !saveButton || !dialog || !doneButton || !cancelButton) return;
 
+        const profileCheckbox = document.getElementById('ps-profile-read-direct-reports');
+        const profileConfiguration = document.getElementById('prd-profile-read-direct-reports');
+        const profileSummary = document.getElementById('prd-profile-read-summary');
+        const categoryLinks = Array.from(dialog.querySelectorAll('[data-ps-category]'));
+        const panels = Array.from(dialog.querySelectorAll('.ps-permissions'));
+        let checkboxSnapshot = [];
+
+        categoryLinks.forEach(function (link) {
+            link.addEventListener('click', function (event) {
+                event.preventDefault();
+                categoryLinks.forEach(function (category) {
+                    const selected = category === link;
+                    category.classList.toggle('selected', selected);
+                    if (selected) category.setAttribute('aria-current', 'true');
+                    else category.removeAttribute('aria-current');
+                });
+                panels.forEach(function (panel) {
+                    panel.hidden = panel.id !== link.dataset.psCategory;
+                });
+            });
+        });
+
         const selectAllCheckbox = dialog.querySelector('[data-ps-select-all]');
-        const permissionCheckboxes = Array.from(dialog.querySelectorAll('.ps-check-list input[type="checkbox"]:not([data-ps-select-all])'));
+        const permissionCheckboxes = Array.from(document.getElementById('ps-check-tool').querySelectorAll('.ps-check-list input[type="checkbox"]:not([data-ps-select-all])'));
 
         function updateSelectAllState() {
             if (!selectAllCheckbox || permissionCheckboxes.length === 0) return;
@@ -224,12 +263,20 @@
         }
 
         function openDialog() {
+            profileCheckbox.checked = profileConfiguration.value === 'true';
+            checkboxSnapshot = Array.from(dialog.querySelectorAll('input[type="checkbox"]')).map(function (checkbox) {
+                return { checkbox: checkbox, checked: checkbox.checked };
+            });
             dialog.hidden = false;
             document.body.classList.add('ps-dialog-open');
             doneButton.focus();
         }
 
         function closeDialog() {
+            checkboxSnapshot.forEach(function (state) {
+                state.checkbox.checked = state.checked;
+            });
+            updateSelectAllState();
             dialog.hidden = true;
             document.body.classList.remove('ps-dialog-open');
             openButton.focus();
@@ -239,7 +286,12 @@
         saveButton.addEventListener('click', function () {
             window.location.href = '/ManagePermissionRoles';
         });
-        doneButton.addEventListener('click', closeDialog);
+        doneButton.addEventListener('click', function () {
+            profileConfiguration.value = String(profileCheckbox.checked);
+            profileSummary.hidden = !profileCheckbox.checked;
+            checkboxSnapshot = [];
+            closeDialog();
+        });
         cancelButton.addEventListener('click', closeDialog);
 
         dialog.addEventListener('click', function (event) {

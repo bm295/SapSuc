@@ -202,6 +202,7 @@ html, body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; f
 .ps-categories a { min-height: 53px; display: flex; align-items: center; color: #405b73; padding: 0 0 0 14px; font-size: 18px; text-decoration: underline; }
 .ps-categories a.selected { background: #c9e4fa; color: #30526d; text-decoration: underline; }
 .ps-permissions { min-width: 0; padding-top: 0; color: #333; }
+.ps-permissions[hidden], .prd-permission-line[hidden] { display: none; }
 .ps-permissions h3 { margin: 0 0 16px; color: #333; font-size: 20px; font-weight: 700; }
 .ps-check-list { display: grid; gap: 8px; }
 .ps-check-row { min-height: 25px; display: flex; align-items: center; gap: 10px; margin: 0; color: #333; font-size: 18px; line-height: 1.2; cursor: pointer; }
