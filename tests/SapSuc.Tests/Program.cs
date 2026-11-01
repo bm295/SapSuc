@@ -7,6 +7,7 @@ internal static class Program
         var tests = new (string Name, Action Run)[]
         {
             ("LlmResilience", LlmTests.Run),
+            ("VectorSearch", VectorSearchTests.Run),
             ("LineManagerWithDirectReportsOnlyPermissionCanViewSalesEmployeeButCannotViewFinanceEmployee", LineManagerWithDirectReportsOnlyPermissionCanViewSalesEmployeeButCannotViewFinanceEmployee),
             ("LineManagerWithoutAssignedDepartmentCannotViewEmployeeProfile", LineManagerWithoutAssignedDepartmentCannotViewEmployeeProfile),
             ("LineManagerWithoutDirectReportsOnlyPermissionCannotViewEmployeeProfile", LineManagerWithoutDirectReportsOnlyPermissionCannotViewEmployeeProfile)
