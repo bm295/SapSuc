@@ -16,3 +16,8 @@ dotnet run --project src\SapSuc.Web\SapSuc.Web.csproj
 ## Notes
 
 This is an educational sample and not production software.
+
+## LLM resilience lab
+
+See [the Vietnamese walkthrough](docs/llm-resilience.md) for configuration, error
+contracts and failure experiments. The optional API is disabled by default.
