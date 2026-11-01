@@ -12,7 +12,9 @@ internal static class RagTests
         Check(source.Id == "S1" && source.StartLine == 5 && source.EndLine == 5, "Source provenance");
         var result = await rag.AskAsync("yêu cầu nghỉ phép", (prompt, _) =>
         {
-            Check(prompt.Contains(source.Quote), "Retrieved context reaches generator");
+            using var data = System.Text.Json.JsonDocument.Parse(prompt.Split("DATA:\n")[1]);
+            Check(data.RootElement.GetProperty("sources")[0].GetProperty("Quote").GetString() == source.Quote,
+                "Retrieved context reaches generator");
             return Task.FromResult("{\"claims\":[{\"text\":\"Quản lý phê duyệt nghỉ phép.\",\"sourceIds\":[\"S1\"]}]}");
         }, 1);
         Check(result.Status == "answered" && result.Answer.EndsWith("[S1]") &&
