@@ -21,3 +21,9 @@ This is an educational sample and not production software.
 
 See [the Vietnamese walkthrough](docs/llm-resilience.md) for configuration, error
 contracts and failure experiments. The optional API is disabled by default.
+
+## Embeddings and vector search lab
+
+See [hướng dẫn thực hành tiếng Việt](docs/vector-search.md) for offline embeddings,
+cosine top-k, an LSH vector index, exact/ANN recall comparison and an optional
+real semantic embedding experiment.

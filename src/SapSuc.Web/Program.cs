@@ -33,6 +33,8 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+builder.Services.AddSingleton<SuccessFactorsLike.Search.HrSearchLab>();
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -76,6 +78,21 @@ if (builder.Configuration.GetValue<bool>("Llm:Enabled"))
     }).RequireRateLimiting("llm").WithMetadata(new Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute(20000));
 }
 
+// Offline educational endpoint, opt-in because this sample has no authentication.
+if (builder.Configuration.GetValue<bool>("VectorSearch:Enabled"))
+{
+    app.MapPost("/api/hr-search/compare", IResult (VectorSearchRequest input,
+        SuccessFactorsLike.Search.HrSearchLab lab) =>
+    {
+        try { return Results.Ok(lab.Compare(input.Query ?? "", input.K ?? 3)); }
+        catch (ArgumentException error)
+        { return Results.Problem(statusCode: 400, title: error.Message); }
+    }).RequireRateLimiting("llm")
+      .WithMetadata(new Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute(20000));
+}
+
 app.Run();
+
+public sealed record VectorSearchRequest(string? Query, int? K);
 
 public sealed record HrAssistantRequest(string? Prompt);

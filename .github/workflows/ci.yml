@@ -35,3 +35,6 @@ jobs:
       # SapSuc.Tests is a console test runner that returns a nonzero exit code on failure.
       - name: Run tests
         run: dotnet run --project tests/SapSuc.Tests/SapSuc.Tests.csproj --configuration Release --no-build
+
+      - name: Run offline vector search lab
+        run: dotnet run --project tools/VectorSearchLab --configuration Release -- "yêu cầu nghỉ phép"
