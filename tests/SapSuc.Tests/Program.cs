@@ -6,6 +6,7 @@ internal static class Program
     {
         var tests = new (string Name, Action Run)[]
         {
+            ("LlmResilience", LlmTests.Run),
             ("LineManagerWithDirectReportsOnlyPermissionCanViewSalesEmployeeButCannotViewFinanceEmployee", LineManagerWithDirectReportsOnlyPermissionCanViewSalesEmployeeButCannotViewFinanceEmployee),
             ("LineManagerWithoutAssignedDepartmentCannotViewEmployeeProfile", LineManagerWithoutAssignedDepartmentCannotViewEmployeeProfile),
             ("LineManagerWithoutDirectReportsOnlyPermissionCannotViewEmployeeProfile", LineManagerWithoutDirectReportsOnlyPermissionCannotViewEmployeeProfile)
