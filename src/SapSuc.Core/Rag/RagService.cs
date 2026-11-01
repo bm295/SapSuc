@@ -93,9 +93,9 @@ public sealed class RagService
             if (response.claims.Any(c => c is null || string.IsNullOrWhiteSpace(c.text) || c.text.Length > 2000 ||
                 c.text.Contains('[') || c.text.Contains(']') || c.sourceIds is null || c.sourceIds.Length == 0 ||
                 c.sourceIds.Any(id => id is null || !allowed.Contains(id)))) throw Invalid();
-            var used = response.claims.SelectMany(c => c.sourceIds!).ToHashSet(StringComparer.Ordinal);
+            var used = response.claims.SelectMany(c => c!.sourceIds!).ToHashSet(StringComparer.Ordinal);
             var answer = string.Join("\n", response.claims.Select(c =>
-                $"{c.text} {string.Join(" ", c.sourceIds!.Distinct().Select(id => $"[{id}]"))}"));
+                $"{c!.text} {string.Join(" ", c.sourceIds!.Distinct().Select(id => $"[{id}]"))}"));
             return new("answered", answer, sources.Where(s => used.Contains(s.Id)).ToArray(), embedding.SpaceId);
         }
         catch (JsonException) { throw Invalid(); }
