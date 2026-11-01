@@ -8,6 +8,7 @@ internal static class Program
         {
             ("LlmResilience", LlmTests.Run),
             ("VectorSearch", VectorSearchTests.Run),
+            ("Rag", RagTests.Run),
             ("LineManagerWithDirectReportsOnlyPermissionCanViewSalesEmployeeButCannotViewFinanceEmployee", LineManagerWithDirectReportsOnlyPermissionCanViewSalesEmployeeButCannotViewFinanceEmployee),
             ("LineManagerWithoutAssignedDepartmentCannotViewEmployeeProfile", LineManagerWithoutAssignedDepartmentCannotViewEmployeeProfile),
             ("LineManagerWithoutDirectReportsOnlyPermissionCannotViewEmployeeProfile", LineManagerWithoutDirectReportsOnlyPermissionCannotViewEmployeeProfile)
@@ -95,3 +96,4 @@ internal static class Program
         }
     }
 }
+

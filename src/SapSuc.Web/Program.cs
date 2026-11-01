@@ -1,3 +1,4 @@
+using SuccessFactorsLike.Rag;
 using SuccessFactorsLike.Integration.Llm;
 using System.Threading.RateLimiting;
 
@@ -34,6 +35,8 @@ builder.Services.AddSession(options =>
 });
 
 builder.Services.AddSingleton<SuccessFactorsLike.Search.HrSearchLab>();
+
+builder.Services.AddSingleton(_ => RagService.CreateDefault());
 
 var app = builder.Build();
 
@@ -91,8 +94,38 @@ if (builder.Configuration.GetValue<bool>("VectorSearch:Enabled"))
       .WithMetadata(new Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute(20000));
 }
 
+// Synthetic public corpus only; reuse LLM opt-in, timeout/retry and rate limiting.
+if (builder.Configuration.GetValue<bool>("Rag:Enabled"))
+{
+    if (!builder.Configuration.GetValue<bool>("Llm:Enabled"))
+        throw new InvalidOperationException("Rag:Enabled requires Llm:Enabled.");
+    app.MapPost("/api/hr-assistant/rag", async Task<IResult> (RagRequest input,
+        RagService rag, LlmClient client, HttpContext context) =>
+    {
+        try
+        {
+            return Results.Ok(await rag.AskAsync(input.Question ?? "", client.CompleteAsync,
+                input.K ?? 3, input.MinScore ?? 0.2, context.RequestAborted));
+        }
+        catch (ArgumentException error)
+        { return Results.Problem(statusCode: 400, title: error.Message); }
+        catch (LlmException error)
+        {
+            if (error.RetryAfter is { } delay)
+                context.Response.Headers.RetryAfter = Math.Ceiling(delay.TotalSeconds)
+                    .ToString(System.Globalization.CultureInfo.InvariantCulture);
+            return Results.Problem(statusCode: error.Status, title: error.Code,
+                extensions: new Dictionary<string, object?> { ["code"] = error.Code });
+        }
+    }).RequireRateLimiting("llm")
+      .WithMetadata(new Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute(20000));
+}
+
 app.Run();
 
 public sealed record VectorSearchRequest(string? Query, int? K);
 
 public sealed record HrAssistantRequest(string? Prompt);
+
+
+public sealed record RagRequest(string? Question, int? K, double? MinScore);

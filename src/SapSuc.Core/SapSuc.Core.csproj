@@ -7,6 +7,10 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Rag/hr-policies.md" LogicalName="SuccessFactorsLike.Rag.hr-policies.md" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -14,3 +18,4 @@
   </PropertyGroup>
 
 </Project>
+

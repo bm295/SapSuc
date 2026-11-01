@@ -27,3 +27,8 @@ contracts and failure experiments. The optional API is disabled by default.
 See [hướng dẫn thực hành tiếng Việt](docs/vector-search.md) for offline embeddings,
 cosine top-k, an LSH vector index, exact/ANN recall comparison and an optional
 real semantic embedding experiment.
+
+
+## RAG với trích dẫn nguồn
+
+Xem [hướng dẫn RAG](docs/rag.md): truy xuất chính sách, sinh câu trả lời và kiểm tra trích dẫn theo đoạn/dòng nguồn.
